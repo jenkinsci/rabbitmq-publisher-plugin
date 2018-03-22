@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="Name" field="name">
+        <f:textbox clazz="required"/>
+    </f:entry>
+
+    <f:entry title="Host" field="host">
+        <f:textbox clazz="required"/>
+    </f:entry>
+
+    <f:entry title="Port" field="port">
+        <f:textbox clazz="required" default="5672"/>
+    </f:entry>
+
+    <f:entry title="Username" field="username">
+        <f:textbox clazz="required" default="guest"/>
+    </f:entry>
+
+    <f:entry title="Password" field="password">
+        <f:password clazz="required"/>
+    </f:entry>
+
+    <f:validateButton
+            title="Test Connection" progress="Testing..."
+            method="testConnection" with="host,port,username,password"/>
+
+    <f:entry title="">
+        <div align="right">
+            <f:repeatableDeleteButton/>
+        </div>
+    </f:entry>
+
+</j:jelly>

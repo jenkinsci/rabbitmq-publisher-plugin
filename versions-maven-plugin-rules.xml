@@ -1,0 +1,36 @@
+<ruleset comparisonMethod="maven"
+         xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 http://mojo.codehaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
+
+    <ignoreVersions>
+        <ignoreVersion type="regex">.*(alpha|ALPHA).*</ignoreVersion>
+        <ignoreVersion type="regex">.*(beta|BETA|Beta).*</ignoreVersion>
+        <ignoreVersion type="regex">.*(rc|RC)[\d].*</ignoreVersion>
+        <ignoreVersion type="regex">.*NO.NO.NO.USE*</ignoreVersion>
+        <ignoreVersion type="regex">.*u.*</ignoreVersion>
+    </ignoreVersions>
+
+    <rules>
+        <!--&lt;!&ndash; apache commons (logging, etc.)&ndash;&gt;-->
+        <!--<rule groupId="commons*" comparisonMethod="maven">-->
+            <!--<ignoreVersions>-->
+                <!--<ignoreVersion type="regex">.*20[\d][\d][\d][\d].*</ignoreVersion>-->
+                <!--<ignoreVersion type="regex">.*pre.*</ignoreVersion>-->
+            <!--</ignoreVersions>-->
+        <!--</rule>-->
+
+        <rule groupId="log4j" artifactId="log4j" comparisonMethod="maven">
+            <ignoreVersions>
+                <ignoreVersion type="regex">.*</ignoreVersion>
+            </ignoreVersions>
+        </rule>
+
+        <rule groupId="commons-logging" artifactId="commons-logging" comparisonMethod="maven">
+            <ignoreVersions>
+                <ignoreVersion type="regex">.*</ignoreVersion>
+            </ignoreVersions>
+        </rule>
+
+    </rules>
+</ruleset>
