@@ -1,5 +1,6 @@
 package fr.biocbon.jenkins.plugins.mq;
 
+import fr.frogdevelopment.jenkins.plugins.mq.Utils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 

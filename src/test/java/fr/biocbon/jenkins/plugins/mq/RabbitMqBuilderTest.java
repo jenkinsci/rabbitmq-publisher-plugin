@@ -1,5 +1,6 @@
 package fr.biocbon.jenkins.plugins.mq;
 
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -17,16 +18,16 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 
-import fr.biocbon.jenkins.plugins.mq.RabbitMqBuilder.Configs;
-import fr.biocbon.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
-import fr.biocbon.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static fr.biocbon.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig;
+import static fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig;
 
 // https://wiki.jenkins.io/display/JENKINS/Unit+Test
 public class RabbitMqBuilderTest {

@@ -1,4 +1,4 @@
-package fr.biocbon.jenkins.plugins.mq;
+package fr.frogdevelopment.jenkins.plugins.mq;
 
 abstract class Utils {
 
