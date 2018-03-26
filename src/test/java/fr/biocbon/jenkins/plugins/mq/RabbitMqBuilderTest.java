@@ -115,7 +115,7 @@ public class RabbitMqBuilderTest {
         String console = FileUtils.readFileToString(build.getLogFile());
 
         // ASSERTIONS
-        Assertions.assertThat(console).containsSequence(
+        Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Error while sending to Rabbit-MQ : IllegalArgumentException: Unknown rabbit config : rabbit-ko",
                 "Build step 'Publish to Rabbit-MQ' marked build as failure",
@@ -148,7 +148,7 @@ public class RabbitMqBuilderTest {
         String console = FileUtils.readFileToString(build.getLogFile());
 
         // ASSERTIONS
-        Assertions.assertThat(console).containsSequence(
+        Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Retrieving parameters",
@@ -176,7 +176,7 @@ public class RabbitMqBuilderTest {
         String console = FileUtils.readFileToString(build.getLogFile());
 
         // ASSERTIONS
-        Assertions.assertThat(console).containsSequence(
+        Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Retrieving parameters",
@@ -206,7 +206,7 @@ public class RabbitMqBuilderTest {
         String console = FileUtils.readFileToString(build.getLogFile());
 
         // ASSERTIONS
-        Assertions.assertThat(console).containsSequence(
+        Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Retrieving parameters",
