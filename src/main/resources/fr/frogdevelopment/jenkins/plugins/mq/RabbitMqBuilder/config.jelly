@@ -8,7 +8,7 @@
     </f:entry>
 
     <f:entry title="Exchange name" field="exchange">
-        <f:textbox clazz="required" default="BCB-direct"/>
+        <f:textbox clazz="required"/>
     </f:entry>
 
     <f:entry title="Rabbit-MQ Key" field="key">
