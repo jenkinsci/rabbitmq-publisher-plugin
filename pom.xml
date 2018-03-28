@@ -13,17 +13,30 @@
     </parent>
 
     <groupId>fr.frogdevelopment.jenkins.plugins</groupId>
-    <artifactId>rabbit-mq.plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>rabbit-mq.publisher</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
-    <name>Jenkins Rabbit-MQ Plugin</name>
+    <name>Rabbit-MQ Publisher Plugin</name>
+    <description>Allows user to publish messages to Rabbit MQ</description>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <distribution>repo</distribution>
+            <url>https://opensource.org/licenses/MIT</url>
+            <comments>
+                Copyright 2018 Frog Development. All rights reserved.
+            </comments>
+        </license>
+    </licenses>
 
     <developers>
         <developer>
             <id>benoit.legall</id>
             <name>Benoît Le Gall</name>
             <organization>Frog Development</organization>
+            <email>frog.development.it@gmail.com</email>
             <roles>
                 <role>developer</role>
             </roles>
@@ -31,6 +44,9 @@
     </developers>
 
     <scm>
+        <!--<connection>scm:git:https://github.com/jenkinsci/rabbitmq-publisher-plugin.git</connection>-->
+        <!--<developerConnection>scm:git:https://github.com/jenkinsci/rabbitmq-publisher-plugin.git</developerConnection>-->
+        <!--<url>https://github.com/jenkinsci/rabbitmq-publisher-plugin</url>-->
         <tag>HEAD</tag>
     </scm>
 
