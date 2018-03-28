@@ -11,12 +11,16 @@
         <f:textbox clazz="required"/>
     </f:entry>
 
-    <f:entry title="Rabbit-MQ Key" field="key">
-        <f:textbox clazz="required"/>
+    <f:entry title="Routing Key" field="routingKey">
+        <f:textbox/>
     </f:entry>
 
-    <f:entry title="Parameters" field="parameters">
+    <f:entry title="Data" field="data">
         <f:textarea/>
+    </f:entry>
+
+    <f:entry title="Transform to json" field="toJson" description="if checked, convert the data to a json string">
+        <f:checkbox />
     </f:entry>
 
 </j:jelly>

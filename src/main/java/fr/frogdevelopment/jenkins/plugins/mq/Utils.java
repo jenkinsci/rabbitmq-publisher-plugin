@@ -1,6 +1,19 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 abstract class Utils {
+
+    private static final Pattern PARAM_PATTERN = Pattern.compile("\\$\\{?(?<param>\\w+)}?");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     /**
      * Transform a string with "_" to camelCase string, for Java convention.<br>
@@ -36,5 +49,63 @@ abstract class Utils {
         sb.replace(0, 1, String.valueOf(Character.toLowerCase(sb.charAt(0))));
 
         return sb.toString();
+    }
+
+    static String getRawMessage(Map<String, String> buildParameters, String message) {
+
+        // resolving build data
+        StringBuffer sb = new StringBuffer();
+
+        Matcher matcher = PARAM_PATTERN.matcher(message);
+        while (matcher.find()) {
+            String param = matcher.group("param").toUpperCase();
+            if (buildParameters.containsKey(param)) {
+                matcher.appendReplacement(sb, buildParameters.get(param));
+            }
+        }
+        matcher.appendTail(sb);
+
+        return sb.toString();
+    }
+
+    static String getJsonMessage(Map<String, String> buildParameters, String message) {
+        boolean hasError = false;
+
+        // constructing JSON message
+        JSONObject jsonObject = new JSONObject();
+        String[] lines = message.split("\\r?\\n");
+        if (lines.length > 0) {
+            for (String line : lines) {
+                String[] splitLine = line.split("=");
+                if (splitLine.length == 2) {
+                    String paramKey = splitLine[0];
+                    String paramValue = splitLine[1];
+                    if (StringUtils.isNotBlank(paramKey)) {
+                        Matcher matcher = Utils.PARAM_PATTERN.matcher(paramValue);
+                        if (matcher.find()) {
+                            String param = matcher.group("param").toUpperCase();
+                            if (buildParameters.containsKey(param)) {
+                                paramValue = buildParameters.get(param);
+                            }
+                        }
+
+                        LOGGER.info("\t- " + paramKey + "=" + paramValue);
+                        jsonObject.put(Utils.toJava(paramKey), paramValue);
+                    } else {
+                        LOGGER.info("\t- Empty key for : {}", line);
+                        hasError = true;
+                    }
+                } else {
+                    LOGGER.error("\t- Incorrect data format : {}", line);
+                    hasError = true;
+                }
+            }
+        }
+
+        if (hasError) {
+            throw new IllegalStateException("Incorrect data");
+        }
+
+        return jsonObject.toString();
     }
 }

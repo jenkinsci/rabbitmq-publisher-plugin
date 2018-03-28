@@ -38,8 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
 @SuppressWarnings("unused")
@@ -47,19 +45,19 @@ public class RabbitMqBuilder extends Builder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
 
-    private static final Pattern PARAM_PATTERN = Pattern.compile("^\\$\\{?(?<param>\\w+)}?$");
-
     private final String rabbitName;
     private final String exchange;
-    private final String key;
-    private final String parameters;
+    private final String routingKey;
+    private final String data;
+    private final boolean toJson;
 
     @DataBoundConstructor
-    public RabbitMqBuilder(String rabbitName, String exchange, String key, String parameters) {
+    public RabbitMqBuilder(String rabbitName, String exchange, String routingKey, String data, boolean toJson) {
         this.rabbitName = rabbitName;
         this.exchange = exchange;
-        this.key = key;
-        this.parameters = parameters;
+        this.routingKey = routingKey;
+        this.data = data;
+        this.toJson = toJson;
     }
 
     public String getRabbitName() {
@@ -70,12 +68,16 @@ public class RabbitMqBuilder extends Builder {
         return exchange;
     }
 
-    public String getKey() {
-        return key;
+    public String getRoutingKey() {
+        return routingKey;
     }
 
-    public String getParameters() {
-        return parameters;
+    public String getData() {
+        return data;
+    }
+
+    public boolean isToJson() {
+        return toJson;
     }
 
     @Override
@@ -87,11 +89,22 @@ public class RabbitMqBuilder extends Builder {
             RabbitTemplate rabbitTemplate = getRabbitTemplate();
 
             console.println("Building message");
-            String message = getMessage(build, console);
 
-            LOGGER.info("Sending message as JSON:\n{}", message);
+            Map<String, String> buildParameters = getBuildParameters(build, console);
+
+            String message;
+            if (toJson) {
+                message = Utils.getJsonMessage(buildParameters, data);
+                LOGGER.info("Sending message as JSON:\n{}", message);
+                console.println("Sending message as JSON:\n" + message);
+            } else {
+                message = Utils.getRawMessage(buildParameters, data);
+                LOGGER.info("Sending raw message:\n{}", message);
+                console.println("Sending raw message:\n" + message);
+            }
+
             console.println("Sending message");
-            rabbitTemplate.convertAndSend(exchange, key, message);
+            rabbitTemplate.convertAndSend(exchange, routingKey, message);
 
         } catch (Exception e) {
             LOGGER.error("Error while sending to Rabbit-MQ", e);
@@ -128,11 +141,11 @@ public class RabbitMqBuilder extends Builder {
         return rabbitTemplate;
     }
 
-    private String getMessage(AbstractBuild build, PrintStream console) {
-        console.println("Retrieving parameters");
-        LOGGER.info("Retrieving parameters :");
 
-        // Retrieving build parameters
+    private Map<String, String> getBuildParameters(AbstractBuild build, PrintStream console) {
+        console.println("Retrieving data");
+        LOGGER.info("Retrieving data :");
+
         Map<String, String> buildParameters = new HashMap<>();
         ParametersAction parametersAction = build.getAction(ParametersAction.class);
         if (parametersAction != null) {
@@ -145,47 +158,7 @@ public class RabbitMqBuilder extends Builder {
                 }
             }
         }
-
-        boolean hasError = false;
-
-        // constructing JSON message
-        JSONObject jsonObject = new JSONObject();
-        String[] lines = parameters.split("\\r?\\n");
-        if (lines.length > 0) {
-            for (String line : lines) {
-                String[] splitLine = line.split("=");
-                if (splitLine.length == 2) {
-                    String paramKey = splitLine[0];
-                    String paramValue = splitLine[1];
-                    if (StringUtils.isNotBlank(paramKey)) {
-                        Matcher matcher = PARAM_PATTERN.matcher(paramValue);
-                        if (matcher.find()) {
-                            String param = matcher.group("param");
-                            if (buildParameters.containsKey(param.toUpperCase())) {
-                                paramValue = buildParameters.get(param);
-                            }
-                        }
-
-                        LOGGER.info("\t- " + paramKey + "=" + paramValue);
-                        jsonObject.put(Utils.toJava(paramKey), paramValue);
-                    } else {
-                        LOGGER.info("\t- Empty key for : {}", line);
-                        console.println("Empty key for : " + line);
-                        hasError = true;
-                    }
-                } else {
-                    LOGGER.error("\t- Incorrect parameters format : {}", line);
-                    console.println("Incorrect parameters format : " + line);
-                    hasError = true;
-                }
-            }
-        }
-
-        if (hasError) {
-            throw new IllegalStateException("Incorrect data");
-        }
-
-        return jsonObject.toString();
+        return buildParameters;
     }
 
     @Override
@@ -232,10 +205,10 @@ public class RabbitMqBuilder extends Builder {
 
         private RabbitConfig getRabbitConfig(String configName) {
             return configs.getRabbitConfigs()
-                          .stream()
-                          .filter(rc -> rc.getName().equals(configName))
-                          .findFirst()
-                          .orElse(null);
+                    .stream()
+                    .filter(rc -> rc.getName().equals(configName))
+                    .findFirst()
+                    .orElse(null);
         }
 
         public ListBoxModel doFillRabbitNameItems() {
@@ -253,10 +226,10 @@ public class RabbitMqBuilder extends Builder {
                     String[] splitLine = line.split("=");
                     if (splitLine.length == 2) {
                         if (StringUtils.isBlank(splitLine[0])) {
-                            return FormValidation.error("Empty key for : [%s]", line);
+                            return FormValidation.error("Empty routingKey for : [%s]", line);
                         }
                     } else {
-                        return FormValidation.error("Incorrect parameters format for value [%s]. Expected format is key=value", line);
+                        return FormValidation.error("Incorrect data format for value [%s]. Expected format is routingKey=value", line);
                     }
                 }
 

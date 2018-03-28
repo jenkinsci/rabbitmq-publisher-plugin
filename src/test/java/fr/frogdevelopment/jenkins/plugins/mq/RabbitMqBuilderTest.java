@@ -1,5 +1,8 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -9,17 +12,12 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
-
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +46,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, key, parameters);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, key, parameters, true);
         Configs configs = new Configs(rabbitConfigs);
         RabbitMqDescriptor descriptor = rabbitMqBuilder.getDescriptor();
         descriptor.setConfigs(configs);
@@ -56,7 +54,7 @@ public class RabbitMqBuilderTest {
         // ASSERTIONS
         Assertions.assertThat(rabbitMqBuilder.getRabbitName()).isEqualTo(rabbitName);
         Assertions.assertThat(rabbitMqBuilder.getExchange()).isEqualTo(exchange);
-        Assertions.assertThat(rabbitMqBuilder.getKey()).isEqualTo(key);
+        Assertions.assertThat(rabbitMqBuilder.getRoutingKey()).isEqualTo(key);
         Assertions.assertThat(rabbitMqBuilder.getData()).isEqualTo(parameters);
 
         ListBoxModel listBoxModel = descriptor.doFillRabbitNameItems();
@@ -103,7 +101,7 @@ public class RabbitMqBuilderTest {
         rabbitConfigs.add(RABBIT_CONFIG);
         Configs configs = new Configs(rabbitConfigs);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-ko", "exchange", "key", "key=value");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-ko", "exchange", "key", "key=value", true);
         rabbitMqBuilder.getDescriptor().setConfigs(configs);
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -136,7 +134,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.tes", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -151,7 +149,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving parameters",
+                "Retrieving data",
                 "Sending message",
                 "Finished: SUCCESS");
     }
@@ -164,7 +162,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "=empty");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "=empty", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -179,8 +177,8 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving parameters",
-                "Empty key for : =empty",
+                "Retrieving data",
+//                "Empty key for : =empty",
                 "Error while sending to Rabbit-MQ : IllegalStateException: Incorrect data",
                 "Build step 'Publish to Rabbit-MQ' marked build as failure",
                 "Finished: FAILURE");
@@ -194,7 +192,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "incorrect:format");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "incorrect:format", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -209,8 +207,8 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(console).containsSubsequence(
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving parameters",
-                "Incorrect parameters format : incorrect:format",
+                "Retrieving data",
+//                "Incorrect parameters format : incorrect:format",
                 "Error while sending to Rabbit-MQ : IllegalStateException: Incorrect data",
                 "Build step 'Publish to Rabbit-MQ' marked build as failure",
                 "Finished: FAILURE");
