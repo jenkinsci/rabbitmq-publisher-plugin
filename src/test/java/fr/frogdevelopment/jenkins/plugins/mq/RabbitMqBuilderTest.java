@@ -1,6 +1,5 @@
-package fr.biocbon.jenkins.plugins.mq;
+package fr.frogdevelopment.jenkins.plugins.mq;
 
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -58,7 +57,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitMqBuilder.getRabbitName()).isEqualTo(rabbitName);
         Assertions.assertThat(rabbitMqBuilder.getExchange()).isEqualTo(exchange);
         Assertions.assertThat(rabbitMqBuilder.getKey()).isEqualTo(key);
-        Assertions.assertThat(rabbitMqBuilder.getParameters()).isEqualTo(parameters);
+        Assertions.assertThat(rabbitMqBuilder.getData()).isEqualTo(parameters);
 
         ListBoxModel listBoxModel = descriptor.doFillRabbitNameItems();
         Assertions.assertThat(listBoxModel).hasSameSizeAs(rabbitConfigs);
@@ -137,7 +136,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "jenkins.test", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}");
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -165,7 +164,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "jenkins.test", "=empty");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "=empty");
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -195,7 +194,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "jenkins.test", "incorrect:format");
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "incorrect:format");
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
