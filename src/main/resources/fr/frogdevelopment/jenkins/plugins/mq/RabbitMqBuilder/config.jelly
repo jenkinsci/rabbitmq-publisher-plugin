@@ -19,7 +19,7 @@
         <f:textarea/>
     </f:entry>
 
-    <f:entry title="Transform to json" field="toJson" description="if checked, convert the data to a json string">
+    <f:entry title="Convert to json" field="toJson">
         <f:checkbox />
     </f:entry>
 
