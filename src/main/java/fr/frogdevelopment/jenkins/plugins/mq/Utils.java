@@ -1,6 +1,7 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
 import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +93,7 @@ abstract class Utils {
                         LOGGER.info("\t- " + paramKey + "=" + paramValue);
                         jsonObject.put(Utils.toJava(paramKey), paramValue);
                     } else {
-                        LOGGER.info("\t- Empty key for : {}", line);
+                        LOGGER.info("\t- Empty key for line : {}", line);
                         hasError = true;
                     }
                 } else {

@@ -31,7 +31,7 @@ import static fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig
 // https://wiki.jenkins.io/display/JENKINS/Unit+Test
 public class RabbitMqBuilderTest {
 
-    private static final RabbitConfig RABBIT_CONFIG = new RabbitConfig("rabbit-test", "erp-int", 5672, "guest", "guest");
+    private static final RabbitConfig RABBIT_CONFIG = new RabbitConfig("rabbit-test", "roger-rabbit", 5672, "guest", "guest");
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -138,7 +138,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.tes", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FR-exchange", "frogdevelopment.tes", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -166,7 +166,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "=empty", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FD-exchange", "frogdevelopment.test", "=empty", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -196,7 +196,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "BCB-exchange", "frogdevelopment.test", "incorrect:format", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FD-exchange", "frogdevelopment.test", "incorrect:format", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);

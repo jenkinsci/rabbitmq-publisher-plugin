@@ -27,9 +27,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -89,7 +87,13 @@ public class RabbitMqBuilder extends Builder {
 
         try {
             console.println("Initialisation Rabbit-MQ");
-            RabbitTemplate rabbitTemplate = getRabbitTemplate();
+            // INIT RABBIT-MQ
+            RabbitConfig rabbitConfig = getDescriptor().getRabbitConfig(rabbitName);
+
+            if (rabbitConfig == null) {
+                throw new IllegalArgumentException("Unknown rabbit config : " + rabbitName);
+            }
+            RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(rabbitConfig);
 
             console.println("Building message");
 
@@ -118,32 +122,6 @@ public class RabbitMqBuilder extends Builder {
 
         return true;
     }
-
-    private RabbitTemplate getRabbitTemplate() {
-        // INIT RABBIT-MQ
-        RabbitConfig rabbitConfig = getDescriptor().getRabbitConfig(rabbitName);
-
-        if (rabbitConfig == null) {
-            throw new IllegalArgumentException("Unknown rabbit config : " + rabbitName);
-        }
-
-        LOGGER.info("Initialisation Rabbit-MQ :\n\t-Host : {}\n\t-Port : {}\n\t-User : {}", rabbitConfig.getHost(), rabbitConfig.getPort(), rabbitConfig.getUsername());
-
-        //
-        ConnectionFactory connectionFactory = new ConnectionFactory();
-        connectionFactory.setAutomaticRecoveryEnabled(false);
-        connectionFactory.setUsername(rabbitConfig.getUsername());
-        connectionFactory.setPassword(rabbitConfig.getPassword());
-        connectionFactory.setHost(rabbitConfig.getHost());
-        connectionFactory.setPort(rabbitConfig.getPort());
-
-        //
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(new CachingConnectionFactory(connectionFactory));
-        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-
-        return rabbitTemplate;
-    }
-
 
     private Map<String, String> getBuildParameters(AbstractBuild build, PrintStream console) {
         console.println("Retrieving data");
