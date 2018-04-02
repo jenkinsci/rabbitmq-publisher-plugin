@@ -162,9 +162,9 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
+                "Retrieving data",
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving data",
                 "Sending message",
                 "Finished: SUCCESS");
 
@@ -208,9 +208,9 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
+                "Retrieving data",
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving data",
                 "Sending message",
                 "Finished: SUCCESS");
 
@@ -242,9 +242,9 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
+                "Retrieving data",
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving data",
 //                "Empty key for : =empty",
                 "Error while sending to Rabbit-MQ : IllegalStateException: Incorrect data",
                 "Build step 'Publish to Rabbit-MQ' marked build as failure",
@@ -272,9 +272,9 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
+                "Retrieving data",
                 "Initialisation Rabbit-MQ",
                 "Building message",
-                "Retrieving data",
 //                "Incorrect parameters format : incorrect:format",
                 "Error while sending to Rabbit-MQ : IllegalStateException: Incorrect data",
                 "Build step 'Publish to Rabbit-MQ' marked build as failure",
