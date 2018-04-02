@@ -3,6 +3,7 @@ package fr.frogdevelopment.jenkins.plugins.mq;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
@@ -11,10 +12,13 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -40,9 +44,8 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
-@Symbol("rabbitMQPublisher")
 @SuppressWarnings("WeakerAccess")
-public class RabbitMqBuilder extends Builder {
+public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
 
@@ -123,6 +126,11 @@ public class RabbitMqBuilder extends Builder {
         return true;
     }
 
+    @Override
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) {
+
+    }
+
     private Map<String, String> getBuildParameters(AbstractBuild build, PrintStream console) {
         console.println("Retrieving data");
         LOGGER.info("Retrieving data :");
@@ -146,6 +154,7 @@ public class RabbitMqBuilder extends Builder {
     }
 
     @Extension
+    @Symbol("rabbitMQPublisher")
     public static class RabbitMqDescriptor extends BuildStepDescriptor<Builder> {
 
         private Configs configs;
