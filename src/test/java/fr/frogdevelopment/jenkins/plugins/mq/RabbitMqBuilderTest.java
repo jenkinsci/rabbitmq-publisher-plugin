@@ -1,5 +1,7 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig;
 
@@ -127,7 +130,9 @@ public class RabbitMqBuilderTest {
     }
 
     @Test
-    public void test_with_build_parameter() throws IOException, ExecutionException, InterruptedException {
+    public void test_with_build_parameter_to_json() throws IOException, ExecutionException, InterruptedException {
+        RabbitMqFactory.mockRabbitTemplate = null; // to use a new one
+
         String exchange = "FD-exchange";
         String routingKey = "frogdevelopment.test";
 
@@ -135,15 +140,16 @@ public class RabbitMqBuilderTest {
 
         // BUILD PARAMETERS
         List<ParameterValue> parameters = new ArrayList<>();
-        parameters.add(new StringParameterValue("value_name", "value_test"));
-        parameters.add(new StringParameterValue("empty", ""));
-        parameters.add(new StringParameterValue("null", null));
+        parameters.add(new StringParameterValue("VALUE_NAME", "value_test"));
+        parameters.add(new StringParameterValue("VALUE_EMPTY", ""));
+        parameters.add(new StringParameterValue("VALUE_NULL", null));
 
         // RABBIT CONFIG
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, "key_1=${VALUE_NAME}\nkey_2=${EMPTY}\nkey_3=${NULL}", true);
+        String data = "key_1=${VALUE_NAME}\nkey_2=$VALUE_EMPTY\nkey_3=${VALUE_NULL}";
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, data, true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -163,10 +169,56 @@ public class RabbitMqBuilderTest {
                 "Finished: SUCCESS");
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(RabbitMqFactory.mock).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
+
+        Mockito.verify(RabbitMqFactory.mockRabbitTemplate).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
         String value = captor.getValue();
         Assertions.assertThat(value).isNotNull();
-        Assertions.assertThat(value).isEqualTo("{\"key1\":\"value_test\",\"key2\":\"\",\"key3\":\"${NULL}\"}");
+        Assertions.assertThat(value).isEqualTo("{\"key1\":\"value_test\",\"key2\":\"\",\"key3\":null}");
+    }
+
+    @Test
+    public void test_with_build_parameter_raw() throws IOException, ExecutionException, InterruptedException {
+        String exchange = "FD-exchange";
+        String routingKey = "frogdevelopment.test";
+
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject("Unit_Test");
+
+        // BUILD PARAMETERS
+        List<ParameterValue> parameters = new ArrayList<>();
+        parameters.add(new StringParameterValue("VALUE_NAME", "value_test"));
+        parameters.add(new StringParameterValue("VALUE_EMPTY", ""));
+        parameters.add(new StringParameterValue("VALUE_NULL", null));
+
+        // RABBIT CONFIG
+        ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
+        rabbitConfigs.add(RABBIT_CONFIG);
+
+        String data = "key_1=\"${VALUE_NAME}\", key_2=\"$VALUE_EMPTY\", key_3=${VALUE_NULL}";
+
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, data, false);
+        rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
+
+        project.getBuildersList().add(rabbitMqBuilder);
+
+        // LAUNCH BUILD
+        FreeStyleBuild build = project.scheduleBuild2(0, new ParametersAction(parameters)).get();
+
+        // GET OUTPUT
+        String console = FileUtils.readFileToString(build.getLogFile());
+
+        // ASSERTIONS
+        Assertions.assertThat(console).containsSubsequence(
+                "Initialisation Rabbit-MQ",
+                "Building message",
+                "Retrieving data",
+                "Sending message",
+                "Finished: SUCCESS");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(RabbitMqFactory.mockRabbitTemplate).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
+        String value = captor.getValue();
+        Assertions.assertThat(value).isNotNull();
+        Assertions.assertThat(value).isEqualTo("key_1=\"value_test\", key_2=\"\", key_3=null");
     }
 
     @Test
@@ -340,6 +392,100 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_2.getPort()).isEqualTo(rabbitConfigJSON_2.getInt("port"));
         Assertions.assertThat(rabbitConfig_2.getUsername()).isEqualTo(rabbitConfigJSON_2.getString("username"));
         Assertions.assertThat(rabbitConfig_2.getPassword()).isEqualTo(rabbitConfigJSON_2.getString("password"));
+    }
+
+
+    @Test
+    @WithoutJenkins
+    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_true() throws IOException, TimeoutException {
+        // data
+        RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
+        String host = "host";
+        String port = "5667";
+        String username = "username";
+        String password = "password";
+
+        // create mock
+        ConnectionFactory mockConnectionFactory = RabbitMqFactory.createConnectionFactory(
+                username,
+                host,
+                host,
+                Integer.parseInt(port)
+        );
+        Connection connection = Mockito.mock(Connection.class);
+
+        // mock
+        Mockito.doReturn(connection).when(mockConnectionFactory).newConnection();
+        Mockito.doReturn(true).when(connection).isOpen();
+
+        // call
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+
+        // assertions
+        Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+        Assertions.assertThat(formValidation.getMessage()).isEqualTo("Connection success");
+    }
+
+    @Test
+    @WithoutJenkins
+    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_false() throws IOException, TimeoutException {
+        // data
+        RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
+        String host = "host";
+        String port = "5667";
+        String username = "username";
+        String password = "password";
+
+        // create mock
+        ConnectionFactory mockConnectionFactory = RabbitMqFactory.createConnectionFactory(
+                username,
+                host,
+                host,
+                Integer.parseInt(port)
+        );
+        Connection connection = Mockito.mock(Connection.class);
+
+        // mock
+        Mockito.doReturn(connection).when(mockConnectionFactory).newConnection();
+        Mockito.doReturn(false).when(connection).isOpen();
+
+        // call
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+
+        // assertions
+        Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+        Assertions.assertThat(formValidation.getMessage()).isEqualTo("Connection failed");
+    }
+
+    @Test
+    @WithoutJenkins
+    public void test_RabbitConfigDescriptor_doTestConnection_exception() throws IOException, TimeoutException {
+        // data
+        RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
+        String host = "host";
+        String port = "5667";
+        String username = "username";
+        String password = "password";
+
+        IOException exception_for_text = new IOException("Mocked exception for text");
+
+        // create mock
+        ConnectionFactory mockConnectionFactory = RabbitMqFactory.createConnectionFactory(
+                username,
+                host,
+                host,
+                Integer.parseInt(port)
+        );
+
+        // mock
+        Mockito.doThrow(exception_for_text).when(mockConnectionFactory).newConnection();
+
+        // call
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+
+        // assertions
+        Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+        Assertions.assertThat(formValidation.getMessage()).isEqualTo("Client error : " + exception_for_text.getMessage());
     }
 
 }

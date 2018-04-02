@@ -61,7 +61,12 @@ abstract class Utils {
         while (matcher.find()) {
             String param = matcher.group("param").toUpperCase();
             if (buildParameters.containsKey(param)) {
-                matcher.appendReplacement(sb, buildParameters.get(param));
+                String replacement = buildParameters.get(param);
+                if (replacement != null) {
+                    matcher.appendReplacement(sb, replacement);
+                } else {
+                    matcher.appendReplacement(sb, "null");
+                }
             }
         }
         matcher.appendTail(sb);
@@ -74,6 +79,7 @@ abstract class Utils {
 
         // constructing JSON message
         JSONObject jsonObject = new JSONObject();
+
         String[] lines = message.split("\\r?\\n");
         if (lines.length > 0) {
             for (String line : lines) {
@@ -82,7 +88,7 @@ abstract class Utils {
                     String paramKey = splitLine[0];
                     String paramValue = splitLine[1];
                     if (StringUtils.isNotBlank(paramKey)) {
-                        Matcher matcher = Utils.PARAM_PATTERN.matcher(paramValue);
+                        Matcher matcher = PARAM_PATTERN.matcher(paramValue);
                         if (matcher.find()) {
                             String param = matcher.group("param").toUpperCase();
                             if (buildParameters.containsKey(param)) {
@@ -91,7 +97,11 @@ abstract class Utils {
                         }
 
                         LOGGER.info("\t- " + paramKey + "=" + paramValue);
-                        jsonObject.put(Utils.toJava(paramKey), paramValue);
+                        if (paramValue != null) {
+                            jsonObject.put(toJava(paramKey), paramValue);
+                        } else {
+                            jsonObject.put(toJava(paramKey), "null");
+                        }
                     } else {
                         LOGGER.info("\t- Empty key for line : {}", line);
                         hasError = true;

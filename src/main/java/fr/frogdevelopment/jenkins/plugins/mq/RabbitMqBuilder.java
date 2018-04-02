@@ -134,9 +134,7 @@ public class RabbitMqBuilder extends Builder {
             for (ParameterValue parameter : parametersAction.getAllParameters()) {
                 String name = parameter.getName();
                 String value = parameter.createVariableResolver(build).resolve(name);
-                if (value != null) {
-                    buildParameters.put(name.toUpperCase(), value);
-                }
+                buildParameters.put(name.toUpperCase(), value);
             }
         }
         return buildParameters;
@@ -335,11 +333,12 @@ public class RabbitMqBuilder extends Builder {
                                                    @QueryParameter("username") final String username,
                                                    @QueryParameter("password") final String password) {
                 try {
-                    ConnectionFactory connectionFactory = new ConnectionFactory();
-                    connectionFactory.setUsername(username);
-                    connectionFactory.setPassword(password);
-                    connectionFactory.setHost(host);
-                    connectionFactory.setPort(Integer.parseInt(port));
+                    ConnectionFactory connectionFactory = RabbitMqFactory.createConnectionFactory(
+                            username,
+                            host,
+                            host,
+                            Integer.parseInt(port)
+                    );
 
                     Connection connection = connectionFactory.newConnection();
                     if (connection.isOpen()) {
