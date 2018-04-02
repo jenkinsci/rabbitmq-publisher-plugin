@@ -9,8 +9,16 @@ class RabbitMqFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
 
+    static RabbitTemplate mock;
+
     static RabbitTemplate getRabbitTemplate(RabbitMqBuilder.RabbitConfig rabbitConfig) {
-        LOGGER.info("Mocking RabbitTemplate");
-        return Mockito.mock(RabbitTemplate.class);
+        if (mock == null) {
+            LOGGER.info("Mocking RabbitTemplate");
+            mock = Mockito.mock(RabbitTemplate.class);
+        } else {
+            LOGGER.info("Re-using mocked RabbitTemplate");
+        }
+
+        return mock;
     }
 }

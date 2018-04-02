@@ -12,6 +12,8 @@ class RabbitMqFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
 
+    static RabbitTemplate mock; // keep it, for test use
+
     static RabbitTemplate getRabbitTemplate(RabbitMqBuilder.RabbitConfig rabbitConfig) {
 
         LOGGER.info("Initialisation Rabbit-MQ :\n\t-Host : {}\n\t-Port : {}\n\t-User : {}", rabbitConfig.getHost(), rabbitConfig.getPort(), rabbitConfig.getUsername());

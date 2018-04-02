@@ -16,6 +16,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
 import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
@@ -41,7 +43,7 @@ public class RabbitMqBuilderTest {
         // DATA
         String rabbitName = "test-name";
         String exchange = "test-exchange";
-        String key = "test-key";
+        String routingKey = "test-routingKey";
         String parameters = "test-parameters";
         boolean isToJson = true;
 
@@ -49,7 +51,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, key, parameters, isToJson);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, routingKey, parameters, isToJson);
         Configs configs = new Configs(rabbitConfigs);
         RabbitMqDescriptor descriptor = rabbitMqBuilder.getDescriptor();
         descriptor.setConfigs(configs);
@@ -57,7 +59,7 @@ public class RabbitMqBuilderTest {
         // ASSERTIONS
         Assertions.assertThat(rabbitMqBuilder.getRabbitName()).isEqualTo(rabbitName);
         Assertions.assertThat(rabbitMqBuilder.getExchange()).isEqualTo(exchange);
-        Assertions.assertThat(rabbitMqBuilder.getRoutingKey()).isEqualTo(key);
+        Assertions.assertThat(rabbitMqBuilder.getRoutingKey()).isEqualTo(routingKey);
         Assertions.assertThat(rabbitMqBuilder.getData()).isEqualTo(parameters);
         Assertions.assertThat(rabbitMqBuilder.isToJson()).isEqualTo(isToJson);
 
@@ -126,6 +128,9 @@ public class RabbitMqBuilderTest {
 
     @Test
     public void test_with_build_parameter() throws IOException, ExecutionException, InterruptedException {
+        String exchange = "FD-exchange";
+        String routingKey = "frogdevelopment.test";
+
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("Unit_Test");
 
         // BUILD PARAMETERS
@@ -138,7 +143,7 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FR-exchange", "frogdevelopment.tes", "key_1=${VALUE_NAME}\nkey_2={EMPTY}\nkey_3={NULL}", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, "key_1=${VALUE_NAME}\nkey_2=${EMPTY}\nkey_3=${NULL}", true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -156,6 +161,12 @@ public class RabbitMqBuilderTest {
                 "Retrieving data",
                 "Sending message",
                 "Finished: SUCCESS");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(RabbitMqFactory.mock).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
+        String value = captor.getValue();
+        Assertions.assertThat(value).isNotNull();
+        Assertions.assertThat(value).isEqualTo("{\"key1\":\"value_test\",\"key2\":\"\",\"key3\":\"${NULL}\"}");
     }
 
     @Test
