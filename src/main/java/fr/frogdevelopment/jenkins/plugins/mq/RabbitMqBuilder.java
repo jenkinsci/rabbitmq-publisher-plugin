@@ -86,6 +86,51 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+        listener.getLogger().println("Retrieving data");
+        LOGGER.info("Retrieving data :");
+
+        Map<String, String> buildParameters = new HashMap<>();
+
+        //noinspection unchecked
+//        buildParameters.putAll(build.getBuildVariables()); fixme use it ?
+
+        ParametersAction parametersAction = build.getAction(ParametersAction.class);
+        if (parametersAction != null) {
+            // this is a rather round about way of doing this...
+            for (ParameterValue parameter : parametersAction.getAllParameters()) {
+                String name = parameter.getName();
+                String value = parameter.createVariableResolver(build).resolve(name);
+                buildParameters.put(name.toUpperCase(), value);
+            }
+        }
+
+        return perform(buildParameters, listener);
+    }
+
+    @Override
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) {
+        listener.getLogger().println("Retrieving data");
+        LOGGER.info("Retrieving data :");
+
+        Map<String, String> buildParameters = new HashMap<>();
+
+        //noinspection unchecked
+//        buildParameters.putAll(build.getBuildVariables()); fixme use it ?
+
+        ParametersAction parametersAction = run.getAction(ParametersAction.class);
+        if (parametersAction != null) {
+            // this is a rather round about way of doing this...
+            for (ParameterValue parameter : parametersAction.getAllParameters()) {
+                String name = parameter.getName();
+                String value = parameter.createVariableResolver((AbstractBuild<?, ?>) run).resolve(name);
+                buildParameters.put(name.toUpperCase(), value);
+            }
+        }
+
+        perform(buildParameters, listener);
+    }
+
+    private boolean perform(@Nonnull Map<String, String> buildParameters, @Nonnull TaskListener listener) {
         PrintStream console = listener.getLogger();
 
         try {
@@ -99,8 +144,6 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(rabbitConfig);
 
             console.println("Building message");
-
-            Map<String, String> buildParameters = getBuildParameters(build, console);
 
             String message;
             if (toJson) {
@@ -124,28 +167,6 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         }
 
         return true;
-    }
-
-    @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) {
-
-    }
-
-    private Map<String, String> getBuildParameters(AbstractBuild build, PrintStream console) {
-        console.println("Retrieving data");
-        LOGGER.info("Retrieving data :");
-
-        Map<String, String> buildParameters = new HashMap<>();
-        ParametersAction parametersAction = build.getAction(ParametersAction.class);
-        if (parametersAction != null) {
-            // this is a rather round about way of doing this...
-            for (ParameterValue parameter : parametersAction.getAllParameters()) {
-                String name = parameter.getName();
-                String value = parameter.createVariableResolver(build).resolve(name);
-                buildParameters.put(name.toUpperCase(), value);
-            }
-        }
-        return buildParameters;
     }
 
     @Override
