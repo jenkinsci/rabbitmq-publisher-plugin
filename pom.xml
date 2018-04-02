@@ -32,19 +32,17 @@
 
     <developers>
         <developer>
-            <id>benoit.legall</id>
-            <name>Benoît Le Gall</name>
+            <id>legall_benoit</id>
+            <name>Le Gall Benoît</name>
             <email>legall.benoit@gmail.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/rabbitmq-publisher.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/rabbitmq-publisher.git</developerConnection>
-        <url>https://github.com/jenkinsci/rabbitmq-publisher</url>
+        <connection>scm:git:ssh://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git
+        </developerConnection>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
         <tag>HEAD</tag>
     </scm>
 
