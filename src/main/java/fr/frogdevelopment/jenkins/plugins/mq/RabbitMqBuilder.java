@@ -27,6 +27,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.slf4j.Logger;
@@ -51,17 +52,24 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     private final String rabbitName;
     private final String exchange;
-    private final String routingKey;
+    private String routingKey;
     private final String data;
-    private final boolean toJson;
+    private boolean toJson;
 
-    @DataBoundConstructor
+    @Deprecated
     public RabbitMqBuilder(String rabbitName, String exchange, String routingKey, String data, boolean toJson) {
         this.rabbitName = rabbitName;
         this.exchange = exchange;
         this.routingKey = routingKey;
         this.data = data;
         this.toJson = toJson;
+    }
+
+    @DataBoundConstructor
+    public RabbitMqBuilder(String rabbitName, String exchange, String data) {
+        this.rabbitName = rabbitName;
+        this.exchange = exchange;
+        this.data = data;
     }
 
     public String getRabbitName() {
@@ -76,12 +84,22 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         return routingKey;
     }
 
+    @DataBoundSetter
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
+
     public String getData() {
         return data;
     }
 
     public boolean isToJson() {
         return toJson;
+    }
+
+    @DataBoundSetter
+    public void setToJson(boolean toJson) {
+        this.toJson = toJson;
     }
 
     @Override
