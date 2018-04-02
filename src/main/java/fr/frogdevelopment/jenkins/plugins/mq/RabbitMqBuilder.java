@@ -43,6 +43,7 @@ import java.util.concurrent.TimeoutException;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
 @Symbol("rabbitMQPublisher")
+@SuppressWarnings("WeakerAccess")
 public class RabbitMqBuilder extends Builder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
@@ -350,6 +351,7 @@ public class RabbitMqBuilder extends Builder {
                 }
             }
 
+            @SuppressWarnings("unused")
             public FormValidation doTestConnection(@QueryParameter("host") final String host,
                                                    @QueryParameter("port") final String port,
                                                    @QueryParameter("username") final String username,

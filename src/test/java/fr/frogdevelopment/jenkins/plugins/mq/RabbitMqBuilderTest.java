@@ -1,8 +1,5 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -12,12 +9,17 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,12 +43,13 @@ public class RabbitMqBuilderTest {
         String exchange = "test-exchange";
         String key = "test-key";
         String parameters = "test-parameters";
+        boolean isToJson = true;
 
         // RABBIT CONFIG
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, key, parameters, true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, key, parameters, isToJson);
         Configs configs = new Configs(rabbitConfigs);
         RabbitMqDescriptor descriptor = rabbitMqBuilder.getDescriptor();
         descriptor.setConfigs(configs);
@@ -56,6 +59,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitMqBuilder.getExchange()).isEqualTo(exchange);
         Assertions.assertThat(rabbitMqBuilder.getRoutingKey()).isEqualTo(key);
         Assertions.assertThat(rabbitMqBuilder.getData()).isEqualTo(parameters);
+        Assertions.assertThat(rabbitMqBuilder.isToJson()).isEqualTo(isToJson);
 
         ListBoxModel listBoxModel = descriptor.doFillRabbitNameItems();
         Assertions.assertThat(listBoxModel).hasSameSizeAs(rabbitConfigs);
