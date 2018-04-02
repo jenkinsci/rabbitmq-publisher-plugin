@@ -28,6 +28,8 @@
         </license>
     </licenses>
 
+    <url>https://wiki.jenkins.io/display/JENKINS/RabbitMQ+Publisher+Plugin</url>
+
     <developers>
         <developer>
             <id>benoit.legall</id>
