@@ -17,9 +17,11 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -40,7 +42,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
-@SuppressWarnings("unused")
+@Symbol("rabbitMQPublisher")
 public class RabbitMqBuilder extends Builder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
