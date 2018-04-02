@@ -51,8 +51,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <jenkins.version>2.107</jenkins.version>
+        <jenkins.version>2.99</jenkins.version>
         <jenkins-test-harness.version>2.34</jenkins-test-harness.version>
+
+        <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
+        <findbugs.failOnError>true</findbugs.failOnError>
 
         <spring.version>5.0.3.RELEASE</spring.version>
         <spring-rabbit.version>2.0.2.RELEASE</spring-rabbit.version>
@@ -168,6 +171,18 @@
                     <version>1.13</version>
                 </plugin>
 
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>${findbugs-maven-plugin.version}</version>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Default</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <findbugsXmlOutput>false</findbugsXmlOutput>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
 
@@ -188,6 +203,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
