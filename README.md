@@ -2,4 +2,4 @@
 
 Plugin for Jenkins, allowing to publish message on a Rabbit MQ
 
-FIXME
+For more information, see https://wiki.jenkins.io/display/JENKINS/RabbitMQ+Publisher+Plugin
