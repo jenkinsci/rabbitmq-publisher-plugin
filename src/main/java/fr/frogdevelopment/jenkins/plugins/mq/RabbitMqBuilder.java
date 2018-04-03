@@ -9,9 +9,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.Descriptor;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -21,7 +20,6 @@ import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -104,23 +102,22 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        listener.getLogger().println("Retrieving data");
-        LOGGER.info("Retrieving data :");
-
-        Map<String, String> buildParameters = new HashMap<>();
+        listener.getLogger().println("Retrieving parameters");
+        LOGGER.info("Retrieving parameters :");
 
         //noinspection unchecked
-//        buildParameters.putAll(build.getBuildVariables()); fixme use it ?
+        Map<String, String> buildVariables = build.getBuildVariables();
+        LOGGER.debug("BuildVariables : {}", buildVariables);
 
-        ParametersAction parametersAction = build.getAction(ParametersAction.class);
-        if (parametersAction != null) {
-            // this is a rather round about way of doing this...
-            for (ParameterValue parameter : parametersAction.getAllParameters()) {
-                String name = parameter.getName();
-                String value = parameter.createVariableResolver(build).resolve(name);
-                buildParameters.put(name.toUpperCase(), value);
-            }
+        Map<String, String> buildParameters = new HashMap<>(buildVariables);
+
+        Cause.UserIdCause userIdCause = (Cause.UserIdCause) build.getCause(Cause.UserIdCause.class);
+        if (userIdCause != null) {
+            buildParameters.put("BUILD_USER_ID", userIdCause.getUserId());
+            buildParameters.put("BUILD_USER_NAME", userIdCause.getUserName());
         }
+
+        LOGGER.debug("Parameters retrieved : {}", buildParameters);
 
         return perform(buildParameters, listener);
     }
@@ -131,19 +128,9 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         LOGGER.info("Retrieving data :");
 
         Map<String, String> buildParameters = new HashMap<>();
+        // FIXME https://jenkins.io/doc/developer/plugin-development/pipeline-integration/
 
-        //noinspection unchecked
-//        buildParameters.putAll(build.getBuildVariables()); fixme use it ?
-
-        ParametersAction parametersAction = run.getAction(ParametersAction.class);
-        if (parametersAction != null) {
-            // this is a rather round about way of doing this...
-            for (ParameterValue parameter : parametersAction.getAllParameters()) {
-                String name = parameter.getName();
-                String value = parameter.createVariableResolver((AbstractBuild<?, ?>) run).resolve(name);
-                buildParameters.put(name.toUpperCase(), value);
-            }
-        }
+        LOGGER.debug("Data retrieved : {}", buildParameters);
 
         perform(buildParameters, listener);
     }

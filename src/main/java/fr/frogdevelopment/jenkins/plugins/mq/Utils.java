@@ -59,7 +59,7 @@ abstract class Utils {
 
         Matcher matcher = PARAM_PATTERN.matcher(message);
         while (matcher.find()) {
-            String param = matcher.group("param").toUpperCase();
+            String param = matcher.group("param");
             if (buildParameters.containsKey(param)) {
                 String replacement = buildParameters.get(param);
                 if (replacement != null) {
@@ -90,7 +90,7 @@ abstract class Utils {
                     if (StringUtils.isNotBlank(paramKey)) {
                         Matcher matcher = PARAM_PATTERN.matcher(paramValue);
                         if (matcher.find()) {
-                            String param = matcher.group("param").toUpperCase();
+                            String param = matcher.group("param");
                             if (buildParameters.containsKey(param)) {
                                 paramValue = buildParameters.get(param);
                             }

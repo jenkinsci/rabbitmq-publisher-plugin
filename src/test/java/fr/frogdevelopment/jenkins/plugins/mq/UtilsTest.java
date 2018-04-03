@@ -43,14 +43,14 @@ public class UtilsTest {
         // data
         Map<String, String> buildParameters = new HashMap<>();
         buildParameters.put("PARAM_1", "VALUE_1");
-        buildParameters.put("PARAM_2", "VALUE_2");
+        buildParameters.put("param_2", "value_2");
         buildParameters.put("PARAM_EMPTY", "");
         buildParameters.put("PARAM_NULL", null);
 
         String message = "{\n" +
                 "\t\"field_1\": \"test\",\n" +
                 "\t\"field_2\": \"${PARAM_1}\",\n" +
-                "\t\"field_3\": \"$PARAM_2\",\n" +
+                "\t\"field_3\": \"$param_2\",\n" +
                 "\t\"field_empty\": \"${PARAM_EMPTY}\",\n" +
                 "\t\"field_null\": ${PARAM_NULL}\n" +
                 "}";
@@ -62,7 +62,7 @@ public class UtilsTest {
         Assertions.assertThat(rawMessage).isEqualTo("{\n" +
                 "\t\"field_1\": \"test\",\n" +
                 "\t\"field_2\": \"VALUE_1\",\n" +
-                "\t\"field_3\": \"VALUE_2\",\n" +
+                "\t\"field_3\": \"value_2\",\n" +
                 "\t\"field_empty\": \"\",\n" +
                 "\t\"field_null\": null\n" +
                 "}");
@@ -73,13 +73,13 @@ public class UtilsTest {
         // data
         Map<String, String> buildParameters = new HashMap<>();
         buildParameters.put("PARAM_1", "VALUE_1");
-        buildParameters.put("PARAM_2", "VALUE_2");
+        buildParameters.put("param_2", "value_2");
         buildParameters.put("PARAM_EMPTY", "");
         buildParameters.put("PARAM_NULL", null);
 
         String message = "field_1=test\n" +
                 "field_2=\"${PARAM_1}\"\n" +
-                "field_3=\"$PARAM_2\"\n" +
+                "field_3=\"$param_2\"\n" +
                 "field_empty=\"${PARAM_EMPTY}\"\n" +
                 "field_null=${PARAM_NULL}";
 
@@ -87,7 +87,7 @@ public class UtilsTest {
         String jsonMessage = Utils.getJsonMessage(buildParameters, message);
 
         // assertions
-        Assertions.assertThat(jsonMessage).isEqualTo("{\"field1\":\"test\",\"field2\":\"VALUE_1\",\"field3\":\"VALUE_2\",\"fieldEmpty\":\"\",\"fieldNull\":null}");
+        Assertions.assertThat(jsonMessage).isEqualTo("{\"field1\":\"test\",\"field2\":\"VALUE_1\",\"field3\":\"value_2\",\"fieldEmpty\":\"\",\"fieldNull\":null}");
     }
 
 }

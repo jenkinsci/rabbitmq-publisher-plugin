@@ -2,6 +2,9 @@ package fr.frogdevelopment.jenkins.plugins.mq;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
+import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -11,7 +14,6 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
@@ -20,10 +22,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.Configs;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig.RabbitConfigDescriptor;
-import fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitMqDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,7 +52,9 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, routingKey, parameters, isToJson);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, parameters);
+        rabbitMqBuilder.setRoutingKey(routingKey);
+        rabbitMqBuilder.setToJson(isToJson);
         Configs configs = new Configs(rabbitConfigs);
         RabbitMqDescriptor descriptor = rabbitMqBuilder.getDescriptor();
         descriptor.setConfigs(configs);
@@ -110,7 +110,9 @@ public class RabbitMqBuilderTest {
         rabbitConfigs.add(RABBIT_CONFIG);
         Configs configs = new Configs(rabbitConfigs);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-ko", "exchange", "key", "key=value", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-ko", "exchange", "key=value");
+        rabbitMqBuilder.setRoutingKey("key");
+        rabbitMqBuilder.setToJson(true);
         rabbitMqBuilder.getDescriptor().setConfigs(configs);
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -148,13 +150,16 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        String data = "key_1=${VALUE_NAME}\nkey_2=$VALUE_EMPTY\nkey_3=${VALUE_NULL}";
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, data, true);
+        String data = "key_1=${VALUE_NAME}";
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, data);
+        rabbitMqBuilder.setRoutingKey(routingKey);
+        rabbitMqBuilder.setToJson(true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
 
         // LAUNCH BUILD
+        System.setProperty(ParametersAction.KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, "true");
         FreeStyleBuild build = project.scheduleBuild2(0, new ParametersAction(parameters)).get();
 
         // GET OUTPUT
@@ -162,7 +167,7 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
-                "Retrieving data",
+                "Retrieving parameters",
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Sending message",
@@ -173,7 +178,7 @@ public class RabbitMqBuilderTest {
         Mockito.verify(RabbitMqFactory.mockRabbitTemplate).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
         String value = captor.getValue();
         Assertions.assertThat(value).isNotNull();
-        Assertions.assertThat(value).isEqualTo("{\"key1\":\"value_test\",\"key2\":\"\",\"key3\":null}");
+        Assertions.assertThat(value).isEqualTo("{\"key1\":\"value_test\"}");
     }
 
     @Test
@@ -186,21 +191,22 @@ public class RabbitMqBuilderTest {
         // BUILD PARAMETERS
         List<ParameterValue> parameters = new ArrayList<>();
         parameters.add(new StringParameterValue("VALUE_NAME", "value_test"));
-        parameters.add(new StringParameterValue("VALUE_EMPTY", ""));
-        parameters.add(new StringParameterValue("VALUE_NULL", null));
 
         // RABBIT CONFIG
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        String data = "key_1=\"${VALUE_NAME}\", key_2=\"$VALUE_EMPTY\", key_3=${VALUE_NULL}";
+        String data = "key_1=\"${VALUE_NAME}\"";
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, routingKey, data, false);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", exchange, data);
+        rabbitMqBuilder.setRoutingKey(routingKey);
+        rabbitMqBuilder.setToJson(false);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
 
         // LAUNCH BUILD
+        System.setProperty(ParametersAction.KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, "true");
         FreeStyleBuild build = project.scheduleBuild2(0, new ParametersAction(parameters)).get();
 
         // GET OUTPUT
@@ -208,7 +214,7 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
-                "Retrieving data",
+                "Retrieving parameters",
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Sending message",
@@ -218,7 +224,7 @@ public class RabbitMqBuilderTest {
         Mockito.verify(RabbitMqFactory.mockRabbitTemplate).convertAndSend(Mockito.eq(exchange), Mockito.eq(routingKey), captor.capture());
         String value = captor.getValue();
         Assertions.assertThat(value).isNotNull();
-        Assertions.assertThat(value).isEqualTo("key_1=\"value_test\", key_2=\"\", key_3=null");
+        Assertions.assertThat(value).isEqualTo("key_1=\"value_test\"");
     }
 
     @Test
@@ -229,7 +235,9 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FD-exchange", "frogdevelopment.test", "=empty", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "frogdevelopment.test", "=empty");
+        rabbitMqBuilder.setRoutingKey("FD-exchange");
+        rabbitMqBuilder.setToJson(true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -242,7 +250,7 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
-                "Retrieving data",
+                "Retrieving parameters",
                 "Initialisation Rabbit-MQ",
                 "Building message",
 //                "Empty key for : =empty",
@@ -259,7 +267,9 @@ public class RabbitMqBuilderTest {
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
         rabbitConfigs.add(RABBIT_CONFIG);
 
-        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "FD-exchange", "frogdevelopment.test", "incorrect:format", true);
+        RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder("rabbit-test", "frogdevelopment.test", "incorrect:format");
+        rabbitMqBuilder.setRoutingKey("FD-exchange");
+        rabbitMqBuilder.setToJson(true);
         rabbitMqBuilder.getDescriptor().setConfigs(new Configs(rabbitConfigs));
 
         project.getBuildersList().add(rabbitMqBuilder);
@@ -272,7 +282,7 @@ public class RabbitMqBuilderTest {
 
         // ASSERTIONS
         Assertions.assertThat(console).containsSubsequence(
-                "Retrieving data",
+                "Retrieving parameters",
                 "Initialisation Rabbit-MQ",
                 "Building message",
 //                "Incorrect parameters format : incorrect:format",
