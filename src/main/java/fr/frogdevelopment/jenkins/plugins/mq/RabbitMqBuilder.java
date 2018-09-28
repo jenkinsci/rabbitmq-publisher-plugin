@@ -5,6 +5,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
@@ -119,7 +120,16 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
         LOGGER.debug("Parameters retrieved : {}", buildParameters);
 
-        return perform(buildParameters, listener);
+        EnvVars env = new EnvVars();
+        try {
+            env = build.getEnvironment(listener);
+        }
+        catch (Exception e) {
+        }
+
+        LOGGER.debug("Environmental variables : {}", env);
+
+        return perform(buildParameters, env, listener);
     }
 
     @Override
@@ -130,12 +140,14 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         Map<String, String> buildParameters = new HashMap<>();
         // FIXME https://jenkins.io/doc/developer/plugin-development/pipeline-integration/
 
+        EnvVars env = new EnvVars();
+
         LOGGER.debug("Data retrieved : {}", buildParameters);
 
-        perform(buildParameters, listener);
+        perform(buildParameters, env, listener);
     }
 
-    private boolean perform(@Nonnull Map<String, String> buildParameters, @Nonnull TaskListener listener) {
+    private boolean perform(@Nonnull Map<String, String> buildParameters,@Nonnull EnvVars env, @Nonnull TaskListener listener) {
         PrintStream console = listener.getLogger();
 
         try {
@@ -150,13 +162,15 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
             console.println("Building message");
 
+            String expandedData = env.expand(data);
+
             String message;
             if (toJson) {
-                message = Utils.getJsonMessage(buildParameters, data);
+                message = Utils.getJsonMessage(buildParameters, expandedData);
                 LOGGER.info("Sending message as JSON:\n{}", message);
                 console.println("Sending message as JSON:\n" + message);
             } else {
-                message = Utils.getRawMessage(buildParameters, data);
+                message = Utils.getRawMessage(buildParameters, expandedData);
                 LOGGER.info("Sending raw message:\n{}", message);
                 console.println("Sending raw message:\n" + message);
             }
