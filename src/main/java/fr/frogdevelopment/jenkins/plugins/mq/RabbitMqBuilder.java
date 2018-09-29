@@ -384,7 +384,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                 try {
                     ConnectionFactory connectionFactory = RabbitMqFactory.createConnectionFactory(
                             username,
-                            host,
+                            password,
                             host,
                             Integer.parseInt(port)
                     );
