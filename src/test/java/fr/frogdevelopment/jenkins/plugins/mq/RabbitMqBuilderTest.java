@@ -402,7 +402,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_1.getPort()).isEqualTo(rabbitConfigJSON_1.getInt("port"));
         Assertions.assertThat(rabbitConfig_1.getUsername()).isEqualTo(rabbitConfigJSON_1.getString("username"));
         Assertions.assertThat(rabbitConfig_1.getPassword()).isEqualTo(rabbitConfigJSON_1.getString("password"));
-        Assertions.assertThat(rabbitConfig_1.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getString("isSecure"));
+        Assertions.assertThat(rabbitConfig_1.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
 
         RabbitConfig rabbitConfig_2 = configs.getRabbitConfigs().get(1);
         Assertions.assertThat(rabbitConfig_2.getName()).isEqualTo(rabbitConfigJSON_2.getString("name"));
@@ -410,7 +410,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_2.getPort()).isEqualTo(rabbitConfigJSON_2.getInt("port"));
         Assertions.assertThat(rabbitConfig_2.getUsername()).isEqualTo(rabbitConfigJSON_2.getString("username"));
         Assertions.assertThat(rabbitConfig_2.getPassword()).isEqualTo(rabbitConfigJSON_2.getString("password"));
-        Assertions.assertThat(rabbitConfig_2.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getString("isSecure"));
+        Assertions.assertThat(rabbitConfig_2.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
     }
 
 
