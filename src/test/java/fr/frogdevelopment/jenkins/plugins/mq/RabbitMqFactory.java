@@ -5,6 +5,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 class RabbitMqFactory {
@@ -12,6 +13,7 @@ class RabbitMqFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
 
     static ConnectionFactory mockConnectionFactory; // keep it, for test use
+    static CachingConnectionFactory mockCachingConnectionFactory;
     static RabbitTemplate mockRabbitTemplate;
 
     static ConnectionFactory createConnectionFactory(String username, String password, String host, int port) {
@@ -25,7 +27,7 @@ class RabbitMqFactory {
         return mockConnectionFactory;
     }
 
-    static RabbitTemplate getRabbitTemplate(RabbitMqBuilder.RabbitConfig rabbitConfig) {
+    static RabbitTemplate getRabbitTemplate(CachingConnectionFactory factory) {
         if (mockRabbitTemplate == null) {
             LOGGER.info("Mocking RabbitTemplate");
             mockRabbitTemplate = Mockito.mock(RabbitTemplate.class);
@@ -34,5 +36,17 @@ class RabbitMqFactory {
         }
 
         return mockRabbitTemplate;
+    }
+
+    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) {
+
+        if (mockCachingConnectionFactory == null) {
+            LOGGER.info("Mocking CachingConnectionFactory");
+            mockCachingConnectionFactory = Mockito.mock(CachingConnectionFactory.class);
+        } else {
+            LOGGER.info("Re-using mocked RabbitTemplate");
+        }
+
+        return mockCachingConnectionFactory;
     }
 }

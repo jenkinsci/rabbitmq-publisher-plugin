@@ -171,6 +171,7 @@ public class RabbitMqBuilderTest {
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Sending message",
+                "Connection destroyed",
                 "Finished: SUCCESS");
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -218,6 +219,7 @@ public class RabbitMqBuilderTest {
                 "Initialisation Rabbit-MQ",
                 "Building message",
                 "Sending message",
+                "Connection destroyed",
                 "Finished: SUCCESS");
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);

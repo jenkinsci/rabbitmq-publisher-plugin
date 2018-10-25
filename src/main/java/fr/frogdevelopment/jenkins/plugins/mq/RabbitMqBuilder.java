@@ -32,6 +32,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -158,12 +160,10 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             if (rabbitConfig == null) {
                 throw new IllegalArgumentException("Unknown rabbit config : " + rabbitName);
             }
-            RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(rabbitConfig);
 
             console.println("Building message");
 
             String expandedData = env.expand(data);
-
             String message;
             if (toJson) {
                 message = Utils.getJsonMessage(buildParameters, expandedData);
@@ -176,8 +176,13 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             }
 
             console.println("Sending message");
-            rabbitTemplate.convertAndSend(exchange, routingKey, message);
 
+            CachingConnectionFactory factory = RabbitMqFactory.getCachingConnectionFactory(rabbitConfig);
+            RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(factory);
+            rabbitTemplate.convertAndSend(exchange, routingKey, message);
+            factory.destroy();
+
+            console.println("Connection destroyed");
         } catch (Exception e) {
             LOGGER.error("Error while sending to Rabbit-MQ", e);
             console.println("Error while sending to Rabbit-MQ : " + ExceptionUtils.getMessage(e));
