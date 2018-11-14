@@ -30,7 +30,14 @@ class RabbitMqFactory {
         return connectionFactory;
     }
 
-    static RabbitTemplate getRabbitTemplate(RabbitMqBuilder.RabbitConfig rabbitConfig) {
+    static RabbitTemplate getRabbitTemplate(CachingConnectionFactory factory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(factory);
+        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+
+        return rabbitTemplate;
+    }
+
+    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) {
         ConnectionFactory connectionFactory = createConnectionFactory(
                 rabbitConfig.getUsername(),
                 rabbitConfig.getPassword(),
@@ -38,10 +45,6 @@ class RabbitMqFactory {
                 rabbitConfig.getPort()
         );
 
-        //
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(new CachingConnectionFactory(connectionFactory));
-        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-
-        return rabbitTemplate;
+        return new CachingConnectionFactory(connectionFactory);
     }
 }
