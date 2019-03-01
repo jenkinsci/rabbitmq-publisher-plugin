@@ -2,10 +2,10 @@ package fr.frogdevelopment.jenkins.plugins.mq;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
@@ -18,6 +18,19 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import hudson.util.Secret;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -29,22 +42,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
 @SuppressWarnings("WeakerAccess")
@@ -126,8 +128,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         EnvVars env = new EnvVars();
         try {
             env = build.getEnvironment(listener);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
         }
 
         LOGGER.debug("Environmental variables : {}", env);
@@ -136,7 +137,8 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) {
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+                        @Nonnull TaskListener listener) {
         listener.getLogger().println("Retrieving data");
         LOGGER.info("Retrieving data :");
 
@@ -150,7 +152,8 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         perform(buildParameters, env, listener);
     }
 
-    private boolean perform(@Nonnull Map<String, String> buildParameters,@Nonnull EnvVars env, @Nonnull TaskListener listener) {
+    private boolean perform(@Nonnull Map<String, String> buildParameters, @Nonnull EnvVars env,
+                            @Nonnull TaskListener listener) {
         PrintStream console = listener.getLogger();
 
         try {
@@ -263,7 +266,9 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                             return FormValidation.error("Empty routingKey for : [%s]", line);
                         }
                     } else {
-                        return FormValidation.error("Incorrect data format for value [%s]. Expected format is routingKey=value", line);
+                        return FormValidation
+                                .error("Incorrect data format for value [%s]. Expected format is routingKey=value",
+                                        line);
                     }
                 }
 
@@ -316,6 +321,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
         @Extension
         public static class ConfigsDescriptor extends Descriptor<Configs> {
+
         }
     }
 
@@ -358,7 +364,23 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             return password;
         }
 
-        public boolean getIsSecure() { return isSecure; }
+        public static String getDecodedPassword(String password) {
+            Secret decrypt = Secret.decrypt(password);
+
+            if (decrypt == null) {
+                return password;
+            }
+
+            return decrypt.getPlainText();
+        }
+
+        public String getDecodedPassword() {
+            return getDecodedPassword(password);
+        }
+
+        public boolean getIsSecure() {
+            return isSecure;
+        }
 
         static RabbitConfig fromJSON(JSONObject jsonObject) {
             String name = jsonObject.getString("name");
@@ -368,7 +390,9 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             String password = jsonObject.getString("password");
             boolean isSecure = jsonObject.getBoolean("isSecure");
 
-            return new RabbitConfig(name, host, port, username, password, isSecure);
+            Secret secret = Secret.fromString(password);
+
+            return new RabbitConfig(name, host, port, username, secret.getEncryptedValue(), isSecure);
         }
 
         @Override
@@ -387,27 +411,31 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                 }
             }
 
+            @RequirePOST
             @SuppressWarnings("unused")
             public FormValidation doTestConnection(@QueryParameter("host") final String host,
                                                    @QueryParameter("port") final String port,
                                                    @QueryParameter("username") final String username,
                                                    @QueryParameter("password") final String password,
                                                    @QueryParameter("isSecure") final String isSecure) {
+                // https://jenkins.io/doc/developer/security/form-validation/
+                Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
                 try {
                     ConnectionFactory connectionFactory = RabbitMqFactory.createConnectionFactory(
                             username,
-                            password,
+                            getDecodedPassword(password),
                             host,
                             Integer.parseInt(port),
                             Boolean.parseBoolean(isSecure)
                     );
 
-                    Connection connection = connectionFactory.newConnection();
-                    if (connection.isOpen()) {
-                        connection.close();
-                        return FormValidation.ok("Connection success");
-                    } else {
-                        return FormValidation.error("Connection failed");
+                    try (Connection connection = connectionFactory.newConnection()) {
+                        if (connection.isOpen()) {
+                            return FormValidation.ok("Connection success");
+                        } else {
+                            return FormValidation.error("Connection failed");
+                        }
                     }
                 } catch (IOException | TimeoutException | GeneralSecurityException e) {
                     LOGGER.error("Connection error", e);

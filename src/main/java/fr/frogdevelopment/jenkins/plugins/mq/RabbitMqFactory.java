@@ -46,7 +46,7 @@ class RabbitMqFactory {
     static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) throws GeneralSecurityException {
         ConnectionFactory connectionFactory = createConnectionFactory(
                 rabbitConfig.getUsername(),
-                rabbitConfig.getPassword(),
+                rabbitConfig.getDecodedPassword(),
                 rabbitConfig.getHost(),
                 rabbitConfig.getPort(),
                 rabbitConfig.getIsSecure()

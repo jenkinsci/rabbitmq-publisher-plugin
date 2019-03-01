@@ -1,24 +1,22 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
 import com.rabbitmq.client.ConnectionFactory;
-
+import java.security.GeneralSecurityException;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import java.security.GeneralSecurityException;
-
 class RabbitMqFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
 
     static ConnectionFactory mockConnectionFactory; // keep it, for test use
-    static CachingConnectionFactory mockCachingConnectionFactory;
     static RabbitTemplate mockRabbitTemplate;
 
-    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port, boolean isSecure) {
+    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port,
+                                                     boolean isSecure) throws GeneralSecurityException {
         if (mockConnectionFactory == null) {
             LOGGER.info("Mocking ConnectionFactory");
             mockConnectionFactory = Mockito.mock(ConnectionFactory.class);
@@ -40,15 +38,16 @@ class RabbitMqFactory {
         return mockRabbitTemplate;
     }
 
-    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) {
+    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig)
+            throws GeneralSecurityException {
+        ConnectionFactory connectionFactory = createConnectionFactory(
+                rabbitConfig.getUsername(),
+                rabbitConfig.getDecodedPassword(),
+                rabbitConfig.getHost(),
+                rabbitConfig.getPort(),
+                rabbitConfig.getIsSecure()
+        );
 
-        if (mockCachingConnectionFactory == null) {
-            LOGGER.info("Mocking CachingConnectionFactory");
-            mockCachingConnectionFactory = Mockito.mock(CachingConnectionFactory.class);
-        } else {
-            LOGGER.info("Re-using mocked RabbitTemplate");
-        }
-
-        return mockCachingConnectionFactory;
+        return new CachingConnectionFactory(connectionFactory);
     }
 }
