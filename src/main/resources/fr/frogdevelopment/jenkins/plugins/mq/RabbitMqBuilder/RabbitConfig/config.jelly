@@ -28,7 +28,7 @@
 
     <f:validateButton
             title="Test Connection" progress="Testing..."
-            method="testConnection" with="host,port,username,password,isSecure"/>
+            method="testConnection" with="host,port,username,password,isSecure" checkMethod="post"/>
 
     <f:entry title="">
         <div align="right">

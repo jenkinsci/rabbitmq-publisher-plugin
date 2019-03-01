@@ -295,7 +295,6 @@ public class RabbitMqBuilderTest {
     }
 
     @Test
-    @WithoutJenkins
     public void test_RabbitConfig_fromJSON() {
         // data
         JSONObject rabbitConfigJSON = new JSONObject();
@@ -314,7 +313,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig.getHost()).isEqualTo(rabbitConfigJSON.getString("host"));
         Assertions.assertThat(rabbitConfig.getPort()).isEqualTo(rabbitConfigJSON.getInt("port"));
         Assertions.assertThat(rabbitConfig.getUsername()).isEqualTo(rabbitConfigJSON.getString("username"));
-        Assertions.assertThat(rabbitConfig.getPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
+        Assertions.assertThat(rabbitConfig.getDecodedPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
         Assertions.assertThat(rabbitConfig.getIsSecure()).isEqualTo(rabbitConfigJSON.getBoolean("isSecure"));
     }
 
@@ -329,7 +328,6 @@ public class RabbitMqBuilderTest {
     }
 
     @Test
-    @WithoutJenkins
     public void test_Configs_fromJSON_1_config() {
         // data
         JSONObject rabbitConfigJSON = new JSONObject();
@@ -358,12 +356,11 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig.getHost()).isEqualTo(rabbitConfigJSON.getString("host"));
         Assertions.assertThat(rabbitConfig.getPort()).isEqualTo(rabbitConfigJSON.getInt("port"));
         Assertions.assertThat(rabbitConfig.getUsername()).isEqualTo(rabbitConfigJSON.getString("username"));
-        Assertions.assertThat(rabbitConfig.getPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
+        Assertions.assertThat(rabbitConfig.getDecodedPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
         Assertions.assertThat(rabbitConfig.getIsSecure()).isEqualTo(rabbitConfigJSON.getBoolean("isSecure"));
     }
 
     @Test
-    @WithoutJenkins
     public void test_Configs_fromJSON_n_configs() {
         // data
         JSONObject rabbitConfigJSON_1 = new JSONObject();
@@ -403,7 +400,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_1.getHost()).isEqualTo(rabbitConfigJSON_1.getString("host"));
         Assertions.assertThat(rabbitConfig_1.getPort()).isEqualTo(rabbitConfigJSON_1.getInt("port"));
         Assertions.assertThat(rabbitConfig_1.getUsername()).isEqualTo(rabbitConfigJSON_1.getString("username"));
-        Assertions.assertThat(rabbitConfig_1.getPassword()).isEqualTo(rabbitConfigJSON_1.getString("password"));
+        Assertions.assertThat(rabbitConfig_1.getDecodedPassword()).isEqualTo(rabbitConfigJSON_1.getString("password"));
         Assertions.assertThat(rabbitConfig_1.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
 
         RabbitConfig rabbitConfig_2 = configs.getRabbitConfigs().get(1);
@@ -411,13 +408,12 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_2.getHost()).isEqualTo(rabbitConfigJSON_2.getString("host"));
         Assertions.assertThat(rabbitConfig_2.getPort()).isEqualTo(rabbitConfigJSON_2.getInt("port"));
         Assertions.assertThat(rabbitConfig_2.getUsername()).isEqualTo(rabbitConfigJSON_2.getString("username"));
-        Assertions.assertThat(rabbitConfig_2.getPassword()).isEqualTo(rabbitConfigJSON_2.getString("password"));
+        Assertions.assertThat(rabbitConfig_2.getDecodedPassword()).isEqualTo(rabbitConfigJSON_2.getString("password"));
         Assertions.assertThat(rabbitConfig_2.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
     }
 
 
     @Test
-    @WithoutJenkins
     public void test_RabbitConfigDescriptor_doTestConnection_isOpen_true() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
@@ -450,7 +446,6 @@ public class RabbitMqBuilderTest {
     }
 
     @Test
-    @WithoutJenkins
     public void test_RabbitConfigDescriptor_doTestConnection_isOpen_false() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
@@ -483,7 +478,6 @@ public class RabbitMqBuilderTest {
     }
 
     @Test
-    @WithoutJenkins
     public void test_RabbitConfigDescriptor_doTestConnection_exception() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
