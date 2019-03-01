@@ -8,6 +8,8 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
+import java.security.GeneralSecurityException;
+
 class RabbitMqFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
@@ -15,7 +17,7 @@ class RabbitMqFactory {
     static ConnectionFactory mockConnectionFactory; // keep it, for test use
     static RabbitTemplate mockRabbitTemplate; // keep it, for test use
 
-    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port) {
+    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port, boolean isSecure) throws GeneralSecurityException {
 
         LOGGER.info("Initialisation Rabbit-MQ :\n\t-Host : {}\n\t-Port : {}\n\t-User : {}", host, port, username);
 
@@ -27,6 +29,10 @@ class RabbitMqFactory {
         connectionFactory.setUsername(username);
         connectionFactory.setPassword(password);
 
+        if (isSecure) {
+            connectionFactory.useSslProtocol();
+        }
+
         return connectionFactory;
     }
 
@@ -37,12 +43,13 @@ class RabbitMqFactory {
         return rabbitTemplate;
     }
 
-    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) {
+    static CachingConnectionFactory getCachingConnectionFactory(RabbitMqBuilder.RabbitConfig rabbitConfig) throws GeneralSecurityException {
         ConnectionFactory connectionFactory = createConnectionFactory(
                 rabbitConfig.getUsername(),
                 rabbitConfig.getPassword(),
                 rabbitConfig.getHost(),
-                rabbitConfig.getPort()
+                rabbitConfig.getPort(),
+                rabbitConfig.getIsSecure()
         );
 
         return new CachingConnectionFactory(connectionFactory);

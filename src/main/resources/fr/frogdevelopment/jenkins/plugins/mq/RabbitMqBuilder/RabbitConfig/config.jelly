@@ -22,9 +22,13 @@
         <f:password clazz="required"/>
     </f:entry>
 
+    <f:entry title="Is Secure?" field="isSecure">
+        <f:checkbox/>
+    </f:entry>
+
     <f:validateButton
             title="Test Connection" progress="Testing..."
-            method="testConnection" with="host,port,username,password"/>
+            method="testConnection" with="host,port,username,password,isSecure"/>
 
     <f:entry title="">
         <div align="right">

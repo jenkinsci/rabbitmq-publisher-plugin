@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import java.security.GeneralSecurityException;
+
 class RabbitMqFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqFactory.class);
@@ -16,7 +18,7 @@ class RabbitMqFactory {
     static CachingConnectionFactory mockCachingConnectionFactory;
     static RabbitTemplate mockRabbitTemplate;
 
-    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port) {
+    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port, boolean isSecure) {
         if (mockConnectionFactory == null) {
             LOGGER.info("Mocking ConnectionFactory");
             mockConnectionFactory = Mockito.mock(ConnectionFactory.class);

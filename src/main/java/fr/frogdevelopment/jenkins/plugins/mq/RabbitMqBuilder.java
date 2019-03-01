@@ -38,6 +38,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -323,14 +324,16 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         private String name;
         private String host;
         private int port;
+        private boolean isSecure;
         private String username;
         private String password;
 
         @DataBoundConstructor
-        public RabbitConfig(String name, String host, int port, String username, String password) {
+        public RabbitConfig(String name, String host, int port, String username, String password, boolean isSecure) {
             this.name = name;
             this.host = host;
             this.port = port;
+            this.isSecure = isSecure;
             this.username = username;
             this.password = password;
         }
@@ -355,14 +358,17 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             return password;
         }
 
+        public boolean getIsSecure() { return isSecure; }
+
         static RabbitConfig fromJSON(JSONObject jsonObject) {
             String name = jsonObject.getString("name");
             String host = jsonObject.getString("host");
             int port = jsonObject.getInt("port");
             String username = jsonObject.getString("username");
             String password = jsonObject.getString("password");
+            boolean isSecure = jsonObject.getBoolean("isSecure");
 
-            return new RabbitConfig(name, host, port, username, password);
+            return new RabbitConfig(name, host, port, username, password, isSecure);
         }
 
         @Override
@@ -385,13 +391,15 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             public FormValidation doTestConnection(@QueryParameter("host") final String host,
                                                    @QueryParameter("port") final String port,
                                                    @QueryParameter("username") final String username,
-                                                   @QueryParameter("password") final String password) {
+                                                   @QueryParameter("password") final String password,
+                                                   @QueryParameter("isSecure") final String isSecure) {
                 try {
                     ConnectionFactory connectionFactory = RabbitMqFactory.createConnectionFactory(
                             username,
                             password,
                             host,
-                            Integer.parseInt(port)
+                            Integer.parseInt(port),
+                            Boolean.parseBoolean(isSecure)
                     );
 
                     Connection connection = connectionFactory.newConnection();
@@ -401,7 +409,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                     } else {
                         return FormValidation.error("Connection failed");
                     }
-                } catch (IOException | TimeoutException e) {
+                } catch (IOException | TimeoutException | GeneralSecurityException e) {
                     LOGGER.error("Connection error", e);
                     return FormValidation.error("Client error : " + e.getMessage());
                 }

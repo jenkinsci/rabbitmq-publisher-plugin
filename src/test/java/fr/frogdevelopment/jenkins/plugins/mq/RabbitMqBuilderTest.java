@@ -24,6 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +35,7 @@ import static fr.frogdevelopment.jenkins.plugins.mq.RabbitMqBuilder.RabbitConfig
 // https://wiki.jenkins.io/display/JENKINS/Unit+Test
 public class RabbitMqBuilderTest {
 
-    private static final RabbitConfig RABBIT_CONFIG = new RabbitConfig("rabbit-test", "roger-rabbit", 5672, "guest", "guest");
+    private static final RabbitConfig RABBIT_CONFIG = new RabbitConfig("rabbit-test", "roger-rabbit", 5672, "guest", "guest", false);
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -303,6 +304,7 @@ public class RabbitMqBuilderTest {
         rabbitConfigJSON.put("port", 123);
         rabbitConfigJSON.put("username", "username_value");
         rabbitConfigJSON.put("password", "password_value");
+        rabbitConfigJSON.put("isSecure", false);
 
         // call
         RabbitConfig rabbitConfig = RabbitConfig.fromJSON(rabbitConfigJSON);
@@ -313,6 +315,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig.getPort()).isEqualTo(rabbitConfigJSON.getInt("port"));
         Assertions.assertThat(rabbitConfig.getUsername()).isEqualTo(rabbitConfigJSON.getString("username"));
         Assertions.assertThat(rabbitConfig.getPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
+        Assertions.assertThat(rabbitConfig.getIsSecure()).isEqualTo(rabbitConfigJSON.getBoolean("isSecure"));
     }
 
     @Test
@@ -335,6 +338,7 @@ public class RabbitMqBuilderTest {
         rabbitConfigJSON.put("port", 123);
         rabbitConfigJSON.put("username", "username_value");
         rabbitConfigJSON.put("password", "password_value");
+        rabbitConfigJSON.put("isSecure", false);
 
 
         JSONObject configsJSON = new JSONObject();
@@ -355,6 +359,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig.getPort()).isEqualTo(rabbitConfigJSON.getInt("port"));
         Assertions.assertThat(rabbitConfig.getUsername()).isEqualTo(rabbitConfigJSON.getString("username"));
         Assertions.assertThat(rabbitConfig.getPassword()).isEqualTo(rabbitConfigJSON.getString("password"));
+        Assertions.assertThat(rabbitConfig.getIsSecure()).isEqualTo(rabbitConfigJSON.getBoolean("isSecure"));
     }
 
     @Test
@@ -367,6 +372,7 @@ public class RabbitMqBuilderTest {
         rabbitConfigJSON_1.put("port", 123);
         rabbitConfigJSON_1.put("username", "username_value1");
         rabbitConfigJSON_1.put("password", "password_value1");
+        rabbitConfigJSON_1.put("isSecure", false);
 
         JSONObject rabbitConfigJSON_2 = new JSONObject();
         rabbitConfigJSON_2.put("name", "name_value2");
@@ -374,6 +380,7 @@ public class RabbitMqBuilderTest {
         rabbitConfigJSON_2.put("port", 456);
         rabbitConfigJSON_2.put("username", "username_value2");
         rabbitConfigJSON_2.put("password", "password_value2");
+        rabbitConfigJSON_2.put("isSecure", false);
 
         JSONArray rabbitConfigsJSONArray = new JSONArray();
         rabbitConfigsJSONArray.add(rabbitConfigJSON_1);
@@ -397,6 +404,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_1.getPort()).isEqualTo(rabbitConfigJSON_1.getInt("port"));
         Assertions.assertThat(rabbitConfig_1.getUsername()).isEqualTo(rabbitConfigJSON_1.getString("username"));
         Assertions.assertThat(rabbitConfig_1.getPassword()).isEqualTo(rabbitConfigJSON_1.getString("password"));
+        Assertions.assertThat(rabbitConfig_1.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
 
         RabbitConfig rabbitConfig_2 = configs.getRabbitConfigs().get(1);
         Assertions.assertThat(rabbitConfig_2.getName()).isEqualTo(rabbitConfigJSON_2.getString("name"));
@@ -404,25 +412,28 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitConfig_2.getPort()).isEqualTo(rabbitConfigJSON_2.getInt("port"));
         Assertions.assertThat(rabbitConfig_2.getUsername()).isEqualTo(rabbitConfigJSON_2.getString("username"));
         Assertions.assertThat(rabbitConfig_2.getPassword()).isEqualTo(rabbitConfigJSON_2.getString("password"));
+        Assertions.assertThat(rabbitConfig_2.getIsSecure()).isEqualTo(rabbitConfigJSON_1.getBoolean("isSecure"));
     }
 
 
     @Test
     @WithoutJenkins
-    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_true() throws IOException, TimeoutException {
+    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_true() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
         String host = "host";
         String port = "5667";
         String username = "username";
         String password = "password";
+        String isSecure = "false";
 
         // create mock
         ConnectionFactory mockConnectionFactory = RabbitMqFactory.createConnectionFactory(
                 username,
                 host,
                 host,
-                Integer.parseInt(port)
+                Integer.parseInt(port),
+                false
         );
         Connection connection = Mockito.mock(Connection.class);
 
@@ -431,7 +442,7 @@ public class RabbitMqBuilderTest {
         Mockito.doReturn(true).when(connection).isOpen();
 
         // call
-        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password, isSecure);
 
         // assertions
         Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -440,20 +451,22 @@ public class RabbitMqBuilderTest {
 
     @Test
     @WithoutJenkins
-    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_false() throws IOException, TimeoutException {
+    public void test_RabbitConfigDescriptor_doTestConnection_isOpen_false() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
         String host = "host";
         String port = "5667";
         String username = "username";
         String password = "password";
+        String isSecure = "false";
 
         // create mock
         ConnectionFactory mockConnectionFactory = RabbitMqFactory.createConnectionFactory(
                 username,
                 host,
                 host,
-                Integer.parseInt(port)
+                Integer.parseInt(port),
+                Boolean.parseBoolean(isSecure)
         );
         Connection connection = Mockito.mock(Connection.class);
 
@@ -462,7 +475,7 @@ public class RabbitMqBuilderTest {
         Mockito.doReturn(false).when(connection).isOpen();
 
         // call
-        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password, isSecure);
 
         // assertions
         Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -471,13 +484,14 @@ public class RabbitMqBuilderTest {
 
     @Test
     @WithoutJenkins
-    public void test_RabbitConfigDescriptor_doTestConnection_exception() throws IOException, TimeoutException {
+    public void test_RabbitConfigDescriptor_doTestConnection_exception() throws IOException, TimeoutException, GeneralSecurityException {
         // data
         RabbitConfigDescriptor rabbitConfigDescriptor = new RabbitConfigDescriptor();
         String host = "host";
         String port = "5667";
         String username = "username";
         String password = "password";
+        String isSecure = "false";
 
         IOException exception_for_text = new IOException("Mocked exception for text");
 
@@ -486,14 +500,15 @@ public class RabbitMqBuilderTest {
                 username,
                 host,
                 host,
-                Integer.parseInt(port)
+                Integer.parseInt(port),
+                Boolean.parseBoolean(isSecure)
         );
 
         // mock
         Mockito.doThrow(exception_for_text).when(mockConnectionFactory).newConnection();
 
         // call
-        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password);
+        FormValidation formValidation = rabbitConfigDescriptor.doTestConnection(host, port, username, password, isSecure);
 
         // assertions
         Assertions.assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
