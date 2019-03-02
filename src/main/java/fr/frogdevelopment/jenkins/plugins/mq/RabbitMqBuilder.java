@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
