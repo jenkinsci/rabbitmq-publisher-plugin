@@ -48,6 +48,7 @@ public class RabbitMqBuilderTest {
         String routingKey = "test-routingKey";
         String parameters = "test-parameters";
         boolean isToJson = true;
+        boolean conversion = true;
 
         // RABBIT CONFIG
         ArrayList<RabbitConfig> rabbitConfigs = new ArrayList<>();
@@ -56,6 +57,7 @@ public class RabbitMqBuilderTest {
         RabbitMqBuilder rabbitMqBuilder = new RabbitMqBuilder(rabbitName, exchange, parameters);
         rabbitMqBuilder.setRoutingKey(routingKey);
         rabbitMqBuilder.setToJson(isToJson);
+        rabbitMqBuilder.setConversion(conversion);
         Configs configs = new Configs(rabbitConfigs);
         RabbitMqDescriptor descriptor = rabbitMqBuilder.getDescriptor();
         descriptor.setConfigs(configs);
@@ -66,6 +68,7 @@ public class RabbitMqBuilderTest {
         Assertions.assertThat(rabbitMqBuilder.getRoutingKey()).isEqualTo(routingKey);
         Assertions.assertThat(rabbitMqBuilder.getData()).isEqualTo(parameters);
         Assertions.assertThat(rabbitMqBuilder.isToJson()).isEqualTo(isToJson);
+        Assertions.assertThat(rabbitMqBuilder.getConversion()).isEqualTo(conversion);
 
         ListBoxModel listBoxModel = descriptor.doFillRabbitNameItems();
         Assertions.assertThat(listBoxModel).hasSameSizeAs(rabbitConfigs);

@@ -21,6 +21,7 @@ import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -52,12 +54,14 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
+    private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
     private final String rabbitName;
     private final String exchange;
     private String routingKey;
     private final String data;
     private boolean toJson;
+    private boolean conversion = true;
 
     @Deprecated
     public RabbitMqBuilder(String rabbitName, String exchange, String routingKey, String data, boolean toJson) {
@@ -104,6 +108,11 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
     public void setToJson(boolean toJson) {
         this.toJson = toJson;
     }
+
+    public boolean getConversion(){return conversion;}
+
+    @DataBoundSetter
+    public void setConversion(boolean conversion) {this.conversion = conversion;}
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
@@ -182,7 +191,11 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
             CachingConnectionFactory factory = RabbitMqFactory.getCachingConnectionFactory(rabbitConfig);
             RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(factory);
-            rabbitTemplate.convertAndSend(exchange, routingKey, message);
+            if (conversion) {
+              rabbitTemplate.convertAndSend(exchange, routingKey, message);
+            }else{
+              rabbitTemplate.send(exchange, routingKey, MessageBuilder.withBody(message.getBytes(DEFAULT_CHARSET)).build());
+            }
             factory.destroy();
 
             console.println("Connection destroyed");
