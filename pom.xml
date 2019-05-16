@@ -47,7 +47,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <jenkins.version>2.150</jenkins.version>
+        <jenkins.version>2.164</jenkins.version>
         <jenkins-test-harness.version>2.34</jenkins-test-harness.version>
 
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
