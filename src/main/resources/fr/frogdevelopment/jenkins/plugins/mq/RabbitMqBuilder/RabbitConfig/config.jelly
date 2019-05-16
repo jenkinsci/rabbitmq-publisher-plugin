@@ -26,9 +26,13 @@
         <f:checkbox/>
     </f:entry>
 
+    <f:entry title="Virtual Host" field="virtualHost">
+        <f:textbox clazz="required" default="/"/>
+    </f:entry>
+
     <f:validateButton
             title="Test Connection" progress="Testing..."
-            method="testConnection" with="host,port,username,password,isSecure" checkMethod="post"/>
+            method="testConnection" with="host,port,username,password,isSecure,virtualHost" checkMethod="post"/>
 
     <f:entry title="">
         <div align="right">

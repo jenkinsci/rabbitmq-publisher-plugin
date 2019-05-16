@@ -17,7 +17,7 @@ class RabbitMqFactory {
     static ConnectionFactory mockConnectionFactory; // keep it, for test use
     static RabbitTemplate mockRabbitTemplate; // keep it, for test use
 
-    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port, boolean isSecure) throws GeneralSecurityException {
+    static ConnectionFactory createConnectionFactory(String username, String password, String host, int port, boolean isSecure,String virtualHost) throws GeneralSecurityException {
 
         LOGGER.info("Initialisation Rabbit-MQ :\n\t-Host : {}\n\t-Port : {}\n\t-User : {}", host, port, username);
 
@@ -28,6 +28,7 @@ class RabbitMqFactory {
         connectionFactory.setPort(port);
         connectionFactory.setUsername(username);
         connectionFactory.setPassword(password);
+        connectionFactory.setVirtualHost(virtualHost);
 
         if (isSecure) {
             connectionFactory.useSslProtocol();
@@ -49,7 +50,8 @@ class RabbitMqFactory {
                 rabbitConfig.getDecodedPassword(),
                 rabbitConfig.getHost(),
                 rabbitConfig.getPort(),
-                rabbitConfig.getIsSecure()
+                rabbitConfig.getIsSecure(),
+                rabbitConfig.getVirtualHost()
         );
 
         return new CachingConnectionFactory(connectionFactory);

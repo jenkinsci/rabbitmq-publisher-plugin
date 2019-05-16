@@ -16,7 +16,7 @@ class RabbitMqFactory {
     static RabbitTemplate mockRabbitTemplate;
 
     static ConnectionFactory createConnectionFactory(String username, String password, String host, int port,
-                                                     boolean isSecure) throws GeneralSecurityException {
+                                                     boolean isSecure,String virtualHost) throws GeneralSecurityException {
         if (mockConnectionFactory == null) {
             LOGGER.info("Mocking ConnectionFactory");
             mockConnectionFactory = Mockito.mock(ConnectionFactory.class);
@@ -45,7 +45,8 @@ class RabbitMqFactory {
                 rabbitConfig.getDecodedPassword(),
                 rabbitConfig.getHost(),
                 rabbitConfig.getPort(),
-                rabbitConfig.getIsSecure()
+                rabbitConfig.getIsSecure(),
+                rabbitConfig.getVirtualHost()
         );
 
         return new CachingConnectionFactory(connectionFactory);

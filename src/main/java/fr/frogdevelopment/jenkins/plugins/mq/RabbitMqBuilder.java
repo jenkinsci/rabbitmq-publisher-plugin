@@ -109,10 +109,10 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         this.toJson = toJson;
     }
 
-    public boolean getConversion(){return conversion;}
+    public boolean getConversion(){ return conversion; }
 
     @DataBoundSetter
-    public void setConversion(boolean conversion) {this.conversion = conversion;}
+    public void setConversion(boolean conversion) { this.conversion = conversion; }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
@@ -345,15 +345,17 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         private boolean isSecure;
         private String username;
         private String password;
+        private String virtualHost = ConnectionFactory.DEFAULT_VHOST;
 
         @DataBoundConstructor
-        public RabbitConfig(String name, String host, int port, String username, String password, boolean isSecure) {
+        public RabbitConfig(String name, String host, int port, String username, String password, boolean isSecure,String virtualHost) {
             this.name = name;
             this.host = host;
             this.port = port;
             this.isSecure = isSecure;
             this.username = username;
             this.password = password;
+            this.virtualHost = virtualHost;
         }
 
         public String getName() {
@@ -375,6 +377,8 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         public String getPassword() {
             return password;
         }
+
+        public String getVirtualHost() { return virtualHost; }
 
         public static String getDecodedPassword(String password) {
             Secret decrypt = Secret.decrypt(password);
@@ -401,10 +405,11 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             String username = jsonObject.getString("username");
             String password = jsonObject.getString("password");
             boolean isSecure = jsonObject.getBoolean("isSecure");
+            String virtualHost = jsonObject.getString("virtualHost");
 
             Secret secret = Secret.fromString(password);
 
-            return new RabbitConfig(name, host, port, username, secret.getEncryptedValue(), isSecure);
+            return new RabbitConfig(name, host, port, username, secret.getEncryptedValue(), isSecure, virtualHost);
         }
 
         @Override
@@ -429,7 +434,8 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                                                    @QueryParameter("port") final String port,
                                                    @QueryParameter("username") final String username,
                                                    @QueryParameter("password") final String password,
-                                                   @QueryParameter("isSecure") final String isSecure) {
+                                                   @QueryParameter("isSecure") final String isSecure,
+                                                   @QueryParameter("virtualHost") final String virtualHost) {
                 // https://jenkins.io/doc/developer/security/form-validation/
                 Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
@@ -439,7 +445,8 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                             getDecodedPassword(password),
                             host,
                             Integer.parseInt(port),
-                            Boolean.parseBoolean(isSecure)
+                            Boolean.parseBoolean(isSecure),
+                            virtualHost
                     );
 
                     try (Connection connection = connectionFactory.newConnection()) {
