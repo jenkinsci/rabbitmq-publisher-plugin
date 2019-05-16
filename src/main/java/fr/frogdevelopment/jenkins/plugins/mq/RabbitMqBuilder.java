@@ -1,7 +1,10 @@
 package fr.frogdevelopment.jenkins.plugins.mq;
 
+import static org.springframework.amqp.core.MessageBuilder.withBody;
+
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -45,12 +48,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 // cf example https://github.com/jenkinsci/hello-world-plugin
-@SuppressWarnings("WeakerAccess")
+@SuppressFBWarnings({"WeakerAccess", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
 public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMqBuilder.class);
@@ -109,10 +111,14 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         this.toJson = toJson;
     }
 
-    public boolean getConversion(){ return conversion; }
+    public boolean getConversion() {
+        return conversion;
+    }
 
     @DataBoundSetter
-    public void setConversion(boolean conversion) { this.conversion = conversion; }
+    public void setConversion(boolean conversion) {
+        this.conversion = conversion;
+    }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
@@ -137,6 +143,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         try {
             env = build.getEnvironment(listener);
         } catch (Exception e) {
+            // nothing to do ?
         }
 
         LOGGER.debug("Environmental variables : {}", env);
@@ -192,9 +199,9 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             CachingConnectionFactory factory = RabbitMqFactory.getCachingConnectionFactory(rabbitConfig);
             RabbitTemplate rabbitTemplate = RabbitMqFactory.getRabbitTemplate(factory);
             if (conversion) {
-              rabbitTemplate.convertAndSend(exchange, routingKey, message);
-            }else{
-              rabbitTemplate.send(exchange, routingKey, MessageBuilder.withBody(message.getBytes(DEFAULT_CHARSET)).build());
+                rabbitTemplate.convertAndSend(exchange, routingKey, message);
+            } else {
+                rabbitTemplate.send(exchange, routingKey, withBody(message.getBytes(DEFAULT_CHARSET)).build());
             }
             factory.destroy();
 
@@ -345,10 +352,11 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
         private boolean isSecure;
         private String username;
         private String password;
-        private String virtualHost = ConnectionFactory.DEFAULT_VHOST;
+        private String virtualHost;
 
         @DataBoundConstructor
-        public RabbitConfig(String name, String host, int port, String username, String password, boolean isSecure,String virtualHost) {
+        public RabbitConfig(String name, String host, int port, String username, String password, boolean isSecure,
+                            String virtualHost) {
             this.name = name;
             this.host = host;
             this.port = port;
@@ -378,7 +386,9 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             return password;
         }
 
-        public String getVirtualHost() { return virtualHost; }
+        public String getVirtualHost() {
+            return virtualHost;
+        }
 
         public static String getDecodedPassword(String password) {
             Secret decrypt = Secret.decrypt(password);
@@ -429,7 +439,6 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
             }
 
             @RequirePOST
-            @SuppressWarnings("unused")
             public FormValidation doTestConnection(@QueryParameter("host") final String host,
                                                    @QueryParameter("port") final String port,
                                                    @QueryParameter("username") final String username,
