@@ -446,7 +446,7 @@ public class RabbitMqBuilder extends Builder implements SimpleBuildStep {
                                                    @QueryParameter("isSecure") final String isSecure,
                                                    @QueryParameter("virtualHost") final String virtualHost) {
                 // https://jenkins.io/doc/developer/security/form-validation/
-                Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+                Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER); // Keep this deprecated method for compatibility with old jenkins
 
                 try {
                     ConnectionFactory connectionFactory = RabbitMqFactory.createConnectionFactory(
