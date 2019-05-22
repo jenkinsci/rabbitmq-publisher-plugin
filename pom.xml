@@ -245,6 +245,12 @@
                     <url>https://nexus.frog-development.com/repository/maven-public/</url>
                 </repository>
             </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>frog-repo</id>
+                    <url>https://nexus.frog-development.com/repository/maven-public/</url>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
     </profiles>
 
