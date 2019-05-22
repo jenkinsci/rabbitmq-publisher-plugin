@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -221,8 +222,7 @@
         <profile>
             <id>jenkins</id>
             <activation>
-                <activeByDefault>true
-                </activeByDefault> <!-- change this to false, if you don't like to have it on per default -->
+                <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
                 <repository>
@@ -236,6 +236,15 @@
                     <url>https://repo.jenkins-ci.org/public/</url>
                 </pluginRepository>
             </pluginRepositories>
+        </profile>
+        <profile>
+            <id>frog</id>
+            <repositories>
+                <repository>
+                    <id>frog-repo</id>
+                    <url>https://nexus.frog-development.com/repository/maven-public/</url>
+                </repository>
+            </repositories>
         </profile>
     </profiles>
 
