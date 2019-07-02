@@ -241,13 +241,13 @@
             <repositories>
                 <repository>
                     <id>frog-repo</id>
-                    <url>https://nexus.frog-development.com/repository/maven-public/</url>
+                    <url>https://artifactory.frog-development.com/artifactory/libs-public/</url>
                 </repository>
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
                     <id>frog-repo</id>
-                    <url>https://nexus.frog-development.com/repository/maven-public/</url>
+                    <url>https://artifactory.frog-development.com/artifactory/libs-public/</url>
                 </pluginRepository>
             </pluginRepositories>
         </profile>
