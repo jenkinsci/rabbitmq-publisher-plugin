@@ -24,7 +24,7 @@
         </license>
     </licenses>
 
-    <url>https://wiki.jenkins.io/display/JENKINS/RabbitMQ+Publisher+Plugin</url>
+    <url>https://github.com/jenkinsci/rabbitmq-publisher-plugin</url>
 
     <developers>
         <developer>
