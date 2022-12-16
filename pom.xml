@@ -53,7 +53,7 @@
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
         <findbugs.failOnError>true</findbugs.failOnError>
 
-        <spring.version>5.2.3.RELEASE</spring.version>
+        <spring.version>5.2.20.RELEASE</spring.version>
         <spring-rabbit.version>2.2.3.RELEASE</spring-rabbit.version>
 
         <slf4jVersion>1.7.26</slf4jVersion>
